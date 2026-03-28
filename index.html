@@ -58,26 +58,33 @@
   #app { height: 100vh; display: flex; flex-direction: column; }
 
   .topbar {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
     border-bottom: none;
-    background: rgba(245,245,240,0.95); backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(245,245,240,0.95); backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     flex-shrink: 0; z-index: 10;
     box-shadow: 0 1px 0 var(--border), 0 3px 0 #14B8A6;
     transition: background 0.3s ease;
+    overflow: hidden;
+  }
+  .topbar-title {
+    font-size: 16px; font-weight: 800; color: #0D9488;
+    letter-spacing: -0.02em; white-space: nowrap; flex-shrink: 0;
+    display: none;
+  }
+  .topbar-right {
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0; margin-left: auto;
   }
   html.dark .topbar { background: rgba(26,26,30,0.95); }
+  html.dark .topbar-title { color: #2DD4BF; }
 
   /* Dark mode overrides */
   html.dark .home-time {
     background: linear-gradient(135deg, #0D9488 0%, #14B8A6 30%, #14B8A6 70%, #0D9488 100%);
     -webkit-background-clip: text; background-clip: text;
   }
-  html.dark .home-quote-hindu-single { background: linear-gradient(135deg, #332B1A, #3D3520); border-color: rgba(251,191,36,0.25); }
-  html.dark .home-quote-text-big { color: var(--text) !important; }
-  html.dark .home-quote-source-big { color: var(--text3) !important; }
-  html.dark .home-quote-eng-single { background: linear-gradient(135deg, #1A2433, #1E2D3D); border-color: rgba(59,130,246,0.15); }
   html.dark .home-notif-bar { background: rgba(42,42,46,0.8); border-top-color: rgba(255,255,255,0.05); }
   html.dark .home-notif-chip { background: var(--card); border-color: rgba(255,255,255,0.12); color: var(--text); }
   html.dark .home-notif-chip.alert { background: rgba(248,113,113,0.15); border-color: rgba(248,113,113,0.25); color: #F87171; }
@@ -96,17 +103,10 @@
   html.dark .room-card { border-color: rgba(255,255,255,0.06) !important; }
   html.dark .leaderboard-card { background: var(--card); }
 
-  /* Dark: nav cards — subtle tinted backgrounds instead of flat dark */
-  html.dark .home-nav-card { border-color: rgba(255,255,255,0.1) !important; }
-  html.dark .home-nav-title { color: #F0F0EC !important; }
+  /* Dark: nav cards — subtle */
+  html.dark .home-nav-card { border-color: rgba(255,255,255,0.1) !important; background: var(--card) !important; }
+  html.dark .home-nav-title { color: var(--text2) !important; }
   html.dark .home-nav-sub { color: #A0A0A0 !important; }
-  html.dark .home-nav-card:nth-child(1) { background: linear-gradient(135deg, #1A2E2A, #1F3530) !important; }
-  html.dark .home-nav-card:nth-child(2) { background: linear-gradient(135deg, #1A2233, #1F2838) !important; }
-  html.dark .home-nav-card:nth-child(3) { background: linear-gradient(135deg, #2E2A1A, #33301F) !important; }
-  html.dark .home-nav-card:nth-child(4) { background: linear-gradient(135deg, #1A2233, #1F2838) !important; }
-  html.dark .home-nav-card:nth-child(5) { background: linear-gradient(135deg, #1A2E1F, #1F3525) !important; }
-  html.dark .home-nav-card:nth-child(6) { background: linear-gradient(135deg, #2B1F1A, #332520) !important; }
-  html.dark .home-nav-card:nth-child(7) { background: linear-gradient(135deg, #251A33, #2D2038) !important; }
 
   /* Dark: motivation / roast cards */
   html.dark .motiv-card { background: var(--card); border-color: rgba(255,255,255,0.06); }
@@ -115,9 +115,14 @@
 
   /* Dark: stat cards */
   html.dark .stat-card { background: var(--card); border-color: rgba(255,255,255,0.06); }
+  html.dark .stat-card::after { opacity: 0.8; }
 
   /* Dark: room status gradient overrides */
   html.dark .room-card { background: var(--card) !important; }
+
+  /* Dark: priority banner */
+  html.dark .dash-priority { background: linear-gradient(135deg, #2A1A1A 0%, #2A2218 50%, #2A2515 100%) !important; border-color: rgba(239,68,68,0.15) !important; }
+  html.dark .dash-priority.all-clean { background: linear-gradient(135deg, #1A2E1F 0%, #1A331F 50%, #203D25 100%) !important; border-color: rgba(34,197,94,0.15) !important; }
 
   /* Dark: room quips */
   html.dark .room-quip-red { background: linear-gradient(135deg, #331A1A, #3D2020); border-color: rgba(239,68,68,0.15); }
@@ -199,12 +204,13 @@
   /* Dark: notes grid add card */
   html.dark .note-add-card { background: var(--card); border-color: rgba(255,255,255,0.08); color: var(--text3); }
   .home-btn {
-    width: 42px; height: 42px; border-radius: 14px; border: none;
-    background: transparent; font-size: 22px; cursor: pointer;
+    width: 48px; height: 48px; border-radius: 16px; border: none;
+    background: transparent; font-size: 24px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .home-btn:active { transform: scale(0.9); background: var(--pill-bg); }
+  .home-btn:active { transform: scale(0.88); background: var(--pill-bg); }
   .logo { display: none; }
   .date-label { font-size: 14px; color: var(--text3); font-weight: 500; }
 
@@ -217,11 +223,11 @@
   /* Hero zone — visible from across the room */
   .home-hero {
     flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: space-between;
-    text-align: center; padding: 0 40px 8px;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 0 40px 12px;
   }
   .home-hero-top {
-    flex: 1; display: flex; flex-direction: column;
+    display: flex; flex-direction: column;
     align-items: center; justify-content: center;
   }
   .home-greeting-text {
@@ -238,9 +244,9 @@
     background: rgba(0,0,0,0.5); animation: fadeIn 0.15s ease;
   }
   .celebration-card {
-    text-align: center; padding: 48px 60px; border-radius: 32px;
+    text-align: center; padding: 52px 64px; border-radius: 36px;
     background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 50%, #99F6E4 100%);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(20,184,166,0.1);
     animation: celebBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
   @keyframes celebBounce {
@@ -268,28 +274,29 @@
     animation: fadeIn 0.8s ease both; margin-bottom: 20px;
   }
 
-  /* Quote — one at a time, large and readable from 6 feet */
-  .home-quote-single {
-    padding: 12px 28px; border-radius: 14px;
-    text-align: center; max-width: 90%; width: auto;
-    animation: cardSlideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
-    animation-delay: 0.3s;
+  /* Quote — inline inside hero, right under date */
+  .home-quote-inline {
+    margin-top: 16px; text-align: center; max-width: 560px;
+    animation: fadeIn 1.4s ease both;
   }
-  .home-quote-hindu-single {
-    background: linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 50%, #FEF3C7 100%);
-    border: 1px solid rgba(251,191,36,0.12);
+  .home-quote-punjabi {
+    font-size: 13px; font-weight: 600; color: #14B8A6;
+    line-height: 1.4; margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .home-quote-eng-single {
-    background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 50%, #DBEAFE 100%);
-    border: 1px solid rgba(59,130,246,0.1);
+  .home-quote-english {
+    font-size: 11px; font-weight: 500; color: #0D9488;
+    opacity: 0.55; font-style: italic; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .home-quote-text-big {
-    font-size: 14px; font-weight: 500; line-height: 1.4; font-style: italic;
-    color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .home-quote-source-big {
-    font-size: 11px; font-weight: 700; color: var(--text3); margin-top: 4px; display: inline;
-  }
+  html.dark .home-quote-punjabi { color: #2DD4BF; }
+  html.dark .home-quote-english { color: #14B8A6; }
+
+  /* Legacy quote classes kept for other uses */
+  .home-quote-bar { display: none; }
+  .home-quote-single { display: none; }
+  .home-quote-text-big { display: none; }
+  .home-quote-source-big { display: none; }
 
   /* Notification bar — subtle strip at bottom */
   .home-notif-bar {
@@ -346,29 +353,34 @@
 
   /* Below-fold content — scroll to see */
   .home-below {
-    padding: 32px 28px; max-width: 1100px; margin: 0 auto; width: 100%;
+    padding: 20px 28px 24px; max-width: 1100px; margin: 0 auto; width: 100%;
   }
 
-  /* Keep nav cards for below-fold */
+  /* Compact thumb-size nav icons */
   .home-nav-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-    margin-bottom: 24px;
+    display: flex; justify-content: center; gap: 12px;
+    flex-wrap: wrap;
   }
   .home-nav-card {
-    background: var(--card); border-radius: 18px; padding: 16px 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1.5px solid var(--border);
-    cursor: pointer; font-family: inherit; text-align: left;
+    background: var(--card); border-radius: 20px;
+    width: 76px; height: 76px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1.5px solid var(--border);
+    cursor: pointer; font-family: inherit; text-align: center;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex; flex-direction: column; gap: 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
   }
-  .home-nav-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.1); }
-  .home-nav-card:active { transform: scale(0.97); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .home-nav-emoji { font-size: 28px; }
-  .home-nav-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
-  .home-nav-sub { font-size: 13px; color: var(--text3); font-weight: 500; line-height: 1.4; }
+  .home-nav-card:active { transform: scale(0.90); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .home-nav-emoji { font-size: 26px; line-height: 1; }
+  .home-nav-title { font-size: 10px; font-weight: 700; letter-spacing: 0.01em; color: var(--text2); line-height: 1.1; }
+  .home-nav-sub { display: none; }
   .home-nav-badge {
-    display: inline-block; padding: 2px 10px; border-radius: 10px;
-    font-size: 12px; font-weight: 700; margin-top: 2px;
+    display: block; position: absolute; top: -4px; right: -4px;
+    padding: 2px 7px; border-radius: 10px;
+    font-size: 10px; font-weight: 800; min-width: 18px; text-align: center;
+    line-height: 1.3;
   }
   @keyframes cardSlideUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -402,24 +414,36 @@
   @media (max-width: 768px) {
     .home-time { font-size: 72px; }
     .home-hero { padding: 0 20px; }
-    .home-quote-single { padding: 20px 24px; }
-    .home-quote-text-big { font-size: 18px; }
-    .home-nav-grid { grid-template-columns: repeat(2, 1fr); }
+    .home-quote-punjabi { font-size: 12px; }
+    .home-quote-english { font-size: 10px; }
+    .home-quote-inline { margin-top: 12px; }
+    .home-nav-grid { gap: 10px; }
+    .home-nav-card { width: 68px; height: 68px; border-radius: 18px; }
+    .home-nav-emoji { font-size: 24px; }
+    .home-nav-title { font-size: 9px; }
   }
 
   .pill-nav {
-    display: flex; background: var(--pill-bg); border-radius: 16px; padding: 3px; gap: 2px;
+    display: flex; background: var(--pill-bg); border-radius: 18px; padding: 4px; gap: 2px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; -ms-overflow-style: none;
+    min-width: 0;
+    mask-image: linear-gradient(to right, transparent 0%, black 8px, black calc(100% - 8px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8px, black calc(100% - 8px), transparent 100%);
   }
+  .pill-nav::-webkit-scrollbar { display: none; }
   .pill-btn {
-    padding: 10px 16px; border-radius: 13px; border: none;
-    font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 12px 16px; border-radius: 14px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
     font-family: inherit; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     background: transparent; color: var(--text3); white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
   }
   .pill-btn:hover { color: var(--text2); }
   .pill-btn.active {
     background: var(--card); color: var(--text);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   }
 
   .content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
@@ -427,50 +451,89 @@
 
   /* Dashboard */
   .dashboard { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .dash-priority {
+    margin-bottom: 28px; padding: 28px 30px; border-radius: 24px;
+    background: linear-gradient(135deg, #FEF2F2 0%, #FFF7ED 50%, #FFFBEB 100%);
+    border: 1.5px solid rgba(239,68,68,0.1);
+    animation: fadeSlideIn 0.4s ease both;
+  }
+  html.dark .dash-priority {
+    background: linear-gradient(135deg, #2A1A1A 0%, #2A2218 50%, #2A2515 100%);
+    border-color: rgba(239,68,68,0.15);
+  }
+  .dash-priority-title { font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dash-priority-rooms { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+  .dash-priority-sub { font-size: 14px; color: var(--text3); margin-top: 6px; font-weight: 500; }
+  .dash-priority.all-clean {
+    background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 50%, #D1FAE5 100%);
+    border-color: rgba(34,197,94,0.12);
+  }
+  html.dark .dash-priority.all-clean {
+    background: linear-gradient(135deg, #1A2E1F 0%, #1A331F 50%, #203D25 100%);
+    border-color: rgba(34,197,94,0.15);
+  }
+  .dash-priority.all-clean .dash-priority-title { color: var(--green); }
   .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 32px; }
   .stat-card {
-    background: var(--card); border-radius: 20px; padding: 26px 22px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--border);
+    background: var(--card); border-radius: 22px; padding: 28px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1.5px solid var(--border);
+    position: relative; overflow: hidden;
   }
-  .stat-num { font-size: 46px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
-  .stat-label { font-size: 15px; font-weight: 600; color: var(--text3); margin-top: 6px; }
+  .stat-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    border-radius: 22px 22px 0 0;
+  }
+  .stat-card:nth-child(1)::after { background: var(--red); }
+  .stat-card:nth-child(2)::after { background: var(--yellow); }
+  .stat-card:nth-child(3)::after { background: var(--green); }
+  .stat-num { font-size: 52px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .stat-label { font-size: 15px; font-weight: 600; color: var(--text3); margin-top: 8px; }
   .section-title {
-    font-size: 19px; font-weight: 700; margin-bottom: 14px;
+    font-size: 21px; font-weight: 800; margin-bottom: 16px;
     display: flex; align-items: center; gap: 10px;
+    letter-spacing: -0.01em;
   }
   .section-count {
-    font-size: 13px; font-weight: 600; color: var(--text3);
-    background: var(--pill-bg); padding: 3px 12px; border-radius: 20px;
+    font-size: 14px; font-weight: 700; color: var(--text3);
+    background: var(--pill-bg); padding: 4px 14px; border-radius: 20px;
   }
-  .section { margin-bottom: 30px; }
-  .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .section { margin-bottom: 34px; }
+  .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
   .room-card {
-    padding: 22px 24px; background: var(--card); border-radius: 22px;
+    padding: 24px 26px; background: var(--card); border-radius: 24px;
     border: 2.5px solid transparent; cursor: pointer; text-align: left;
     font-family: inherit; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04); width: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%;
+    position: relative; overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 110px;
   }
-  .room-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
-  .room-card:active { transform: scale(0.98); }
-  .room-card-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .room-card-floor { font-size: 13px; color: var(--text3); margin-bottom: 14px; font-weight: 500; }
-  .room-card-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .room-card::before {
+    content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 5px;
+    border-radius: 24px 0 0 24px;
+  }
+  .room-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+  .room-card:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .room-card-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .room-card-floor { font-size: 13px; color: var(--text3); margin-bottom: 16px; font-weight: 500; }
+  .room-card-tags { display: flex; gap: 10px; flex-wrap: wrap; }
   .tag {
-    flex: 1; padding: 9px 12px; border-radius: 12px;
-    font-size: 14px; font-weight: 600; text-align: center; min-width: 80px;
+    flex: 1; padding: 11px 14px; border-radius: 14px;
+    font-size: 15px; font-weight: 700; text-align: center; min-width: 90px;
+    letter-spacing: -0.01em;
   }
   .empty-msg {
-    padding: 22px; background: var(--card); border-radius: 16px;
-    color: var(--text3); font-size: 15px; text-align: center;
-    border: 1px solid var(--border);
+    padding: 28px; background: var(--card); border-radius: 20px;
+    color: var(--text3); font-size: 16px; text-align: center;
+    border: 1.5px solid var(--border); font-weight: 500;
   }
 
   /* Motivation cards */
-  .motiv-section { margin-bottom: 28px; }
+  .motiv-section { margin-bottom: 30px; }
   .motiv-card {
-    padding: 18px 22px; border-radius: 18px; margin-bottom: 10px;
-    font-size: 15px; line-height: 1.5; font-weight: 500;
-    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 24px; border-radius: 20px; margin-bottom: 12px;
+    font-size: 16px; line-height: 1.5; font-weight: 500;
+    display: flex; align-items: flex-start; gap: 16px;
     animation: fadeSlideIn 0.3s ease both;
   }
   .motiv-card:nth-child(2) { animation-delay: 0.05s; }
@@ -489,14 +552,14 @@
     background: linear-gradient(135deg, #FFF7ED, #FFFBEB);
     border: 1px solid rgba(251,191,36,0.15);
   }
-  .motiv-emoji { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+  .motiv-emoji { font-size: 30px; flex-shrink: 0; margin-top: 2px; }
   .motiv-text { flex: 1; }
-  .motiv-name { font-weight: 700; font-size: 14px; color: var(--text3); margin-bottom: 2px; }
+  .motiv-name { font-weight: 800; font-size: 13px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
 
   .room-quip {
-    padding: 14px 18px; border-radius: 14px; margin-bottom: 18px;
-    font-size: 14px; font-weight: 500; line-height: 1.5;
-    display: flex; align-items: center; gap: 10px;
+    padding: 16px 20px; border-radius: 16px; margin-bottom: 22px;
+    font-size: 15px; font-weight: 500; line-height: 1.5;
+    display: flex; align-items: center; gap: 12px;
     animation: fadeSlideIn 0.3s ease both;
   }
   .room-quip-red { background: linear-gradient(135deg, #FFF1F2, #FEE2E2); border: 1px solid rgba(239,68,68,0.1); }
@@ -831,9 +894,13 @@
     background: var(--card); border-radius: 18px; padding: 16px 14px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 2px solid var(--border);
     min-height: 200px; display: flex; flex-direction: column;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, opacity 0.2s;
   }
   .meal-day-card.today { border-color: #14B8A6; background: #F0FDFA; }
+  .meal-day-card.past { opacity: 0.4; }
+  .meal-day-card.past:hover, .meal-day-card.past:focus-within { opacity: 0.75; }
+  html.dark .meal-day-card.past { opacity: 0.35; }
+  html.dark .meal-day-card.past:hover, html.dark .meal-day-card.past:focus-within { opacity: 0.7; }
   .meal-day-header { margin-bottom: 12px; }
   .meal-day-name { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text3); }
   .meal-day-date { font-size: 12px; color: var(--text3); margin-top: 1px; }
@@ -907,16 +974,19 @@
   .points-crown { font-size: 18px; }
 
   .leaderboard-card {
-    background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 12px;
-    border: 1.5px solid var(--border); display: flex; align-items: center; gap: 16px;
+    background: var(--card); border-radius: 22px; padding: 22px 24px; margin-bottom: 12px;
+    border: 1.5px solid var(--border); display: flex; align-items: center; gap: 18px;
+    transition: all 0.15s; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
+  .leaderboard-card:active { transform: scale(0.98); }
   .leaderboard-rank {
-    width: 40px; height: 40px; border-radius: 20px; display: flex;
-    align-items: center; justify-content: center; font-size: 20px; font-weight: 800;
+    width: 46px; height: 46px; border-radius: 23px; display: flex;
+    align-items: center; justify-content: center; font-size: 22px; font-weight: 800;
     flex-shrink: 0;
   }
-  .leaderboard-name { font-size: 18px; font-weight: 700; flex: 1; }
-  .leaderboard-pts { font-size: 22px; font-weight: 800; color: #0D9488; }
+  .leaderboard-name { font-size: 19px; font-weight: 700; flex: 1; }
+  .leaderboard-pts { font-size: 24px; font-weight: 800; color: #0D9488; letter-spacing: -0.02em; }
 
   /* ── Info Cards (Wi-Fi, Emergency) ── */
   .info-card {
@@ -950,21 +1020,22 @@
   }
 
   /* ── Grid Map ── */
-  .map-view { padding: 20px 24px; max-width: 1100px; margin: 0 auto; }
-  .floor-tabs { display: flex; justify-content: center; margin-bottom: 16px; }
+  .map-view { padding: 24px 28px; max-width: 1100px; margin: 0 auto; }
+  .floor-tabs { display: flex; justify-content: center; margin-bottom: 20px; }
   .map-toolbar {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
   }
-  .map-toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .map-toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .edit-toggle {
-    padding: 10px 20px; border-radius: 14px; border: 2px solid #E8E8E3;
-    background: transparent; font-size: 14px; font-weight: 600;
+    padding: 12px 22px; border-radius: 16px; border: 2px solid var(--border);
+    background: transparent; font-size: 15px; font-weight: 700;
     cursor: pointer; font-family: inherit; color: var(--text3);
-    transition: all 0.15s;
+    transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+    min-height: 48px;
   }
   .edit-toggle.active { background: var(--text); color: #fff; border-color: var(--text); }
-  .edit-toggle:active { transform: scale(0.96); }
+  .edit-toggle:active { transform: scale(0.95); }
 
   .room-palette {
     display: flex; gap: 4px; flex-wrap: wrap;
@@ -985,52 +1056,54 @@
 
   .grid-container {
     width: 100%; max-width: 900px; margin: 0 auto;
-    background: var(--card); border-radius: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid var(--border);
-    overflow: hidden; padding: 8px;
+    background: var(--card); border-radius: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1.5px solid var(--border);
+    overflow: hidden; padding: 10px;
     user-select: none; -webkit-user-select: none;
   }
   .grid-wrap {
     display: grid;
     grid-template-columns: repeat(24, 1fr);
     gap: 1px;
-    background: rgba(0,0,0,0.06);
+    background: rgba(0,0,0,0.05);
     overflow: visible;
   }
   .grid-cell {
     aspect-ratio: 1;
     position: relative;
     cursor: pointer;
-    transition: background 0.08s;
+    transition: background 0.08s, opacity 0.15s;
     overflow: visible;
+    -webkit-tap-highlight-color: transparent;
   }
-  .grid-cell:hover { }
+  .grid-cell:active { opacity: 0.7; }
   .grid-cell.editing:hover { opacity: 0.85; }
   .grid-cell.empty { background: #FAFAF7; }
   .grid-cell.editing.empty:hover { background: #eee; }
 
   .grid-room-label {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%);
-    font-size: 13px; font-weight: 800; pointer-events: none;
+    font-size: 14px; font-weight: 800; pointer-events: none;
     text-align: center; line-height: 1.2; white-space: nowrap;
-    z-index: 5; padding: 2px 8px; border-radius: 6px;
-    background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    z-index: 5; padding: 3px 10px; border-radius: 8px;
+    background: rgba(255,255,255,0.8); backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     color: var(--label-color, #333);
+    letter-spacing: -0.01em;
   }
   .grid-status-label {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, 50%);
-    font-size: 9px; font-weight: 600; pointer-events: none;
-    white-space: nowrap; z-index: 5; padding: 1px 6px; border-radius: 4px;
-    background: rgba(255,255,255,0.6);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, 55%);
+    font-size: 10px; font-weight: 700; pointer-events: none;
+    white-space: nowrap; z-index: 5; padding: 2px 8px; border-radius: 6px;
+    background: rgba(255,255,255,0.7);
     color: var(--label-color, #333);
   }
   .legend {
-    display: flex; justify-content: center; gap: 24px; margin-top: 16px;
-    font-size: 13px; font-weight: 600; color: var(--text3); flex-wrap: wrap;
+    display: flex; justify-content: center; gap: 28px; margin-top: 20px;
+    font-size: 14px; font-weight: 600; color: var(--text3); flex-wrap: wrap;
   }
-  .legend-item { display: flex; align-items: center; gap: 6px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
 
   /* Modal */
   .modal-overlay {
@@ -1042,64 +1115,70 @@
   }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.2); } }
 
   .modal {
-    background: var(--card); border-radius: 28px;
-    width: 92%; max-width: 660px; max-height: 88vh; overflow-y: auto;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.2);
-    animation: slideUp 0.25s ease;
+    background: var(--card); border-radius: 32px;
+    width: 92%; max-width: 680px; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     -webkit-overflow-scrolling: touch;
   }
   .modal-header {
-    padding: 26px 28px 18px; border-bottom: 1px solid #eee;
+    padding: 28px 30px 20px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; background: var(--card); z-index: 2;
-    border-radius: 28px 28px 0 0;
+    border-radius: 32px 32px 0 0;
   }
-  .modal-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-  .modal-subtitle { font-size: 13px; color: var(--text3); margin-top: 3px; }
+  .modal-title { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+  .modal-subtitle { font-size: 14px; color: var(--text3); margin-top: 4px; font-weight: 500; }
   .close-btn {
-    width: 42px; height: 42px; border-radius: 21px; border: none;
-    background: var(--pill-bg); font-size: 18px; cursor: pointer;
+    width: 48px; height: 48px; border-radius: 24px; border: none;
+    background: var(--pill-bg); font-size: 20px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; font-family: inherit;
+    transition: all 0.15s; flex-shrink: 0;
   }
-  .close-btn:active { background: #ddd; }
-  .modal-body { padding: 22px 28px 28px; }
+  .close-btn:active { background: #ddd; transform: scale(0.92); }
+  .modal-body { padding: 24px 30px 32px; }
   .task-section {
-    margin-bottom: 24px; background: var(--card-hover);
-    border-radius: 20px; padding: 22px; border: 2px solid transparent;
+    margin-bottom: 26px; background: var(--card-hover);
+    border-radius: 22px; padding: 24px; border: 2px solid transparent;
   }
-  .task-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .task-left { display: flex; align-items: center; gap: 12px; }
-  .task-emoji { font-size: 28px; }
-  .task-name { font-size: 20px; font-weight: 700; }
-  .task-status-text { font-size: 13px; font-weight: 600; margin-top: 1px; }
-  .task-latest { padding: 11px 14px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; }
-  .quick-label { font-size: 13px; font-weight: 600; color: var(--text3); margin-bottom: 8px; }
-  .people-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .task-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .task-left { display: flex; align-items: center; gap: 14px; }
+  .task-emoji { font-size: 34px; }
+  .task-name { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+  .task-status-text { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .task-latest { padding: 13px 16px; border-radius: 14px; margin-bottom: 18px; font-size: 15px; font-weight: 500; }
+  .quick-label { font-size: 14px; font-weight: 700; color: var(--text3); margin-bottom: 10px; }
+  .people-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .person-btn {
-    padding: 14px 6px; border-radius: 14px;
-    border: 2px solid #E8E8E3; background: var(--card);
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    font-family: inherit; transition: all 0.12s ease;
+    padding: 18px 8px; border-radius: 16px;
+    border: 2.5px solid var(--border); background: var(--card);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 60px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .person-btn:active { transform: scale(0.95); background: var(--pill-bg); border-color: var(--text3); }
-  .history-section { margin-top: 18px; }
-  .history-label { font-size: 13px; font-weight: 600; color: var(--text3); margin-bottom: 8px; }
-  .history-list { max-height: 260px; overflow-y: auto; }
+  .person-btn:active { transform: scale(0.93); background: var(--pill-bg); border-color: #14B8A6; box-shadow: 0 0 0 3px rgba(20,184,166,0.15); }
+  .history-section { margin-top: 20px; }
+  .history-label { font-size: 14px; font-weight: 700; color: var(--text3); margin-bottom: 10px; }
+  .history-list { max-height: 280px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .history-row {
-    display: flex; align-items: center; justify-content: space-between; padding: 9px 0;
-    border-bottom: 1px solid #eee; font-size: 14px;
+    display: flex; align-items: center; justify-content: space-between; padding: 12px 0;
+    border-bottom: 1px solid var(--border); font-size: 15px;
   }
   .history-row:last-child { border-bottom: none; }
-  .history-left { display: flex; align-items: center; gap: 8px; flex: 1; }
-  .history-name { font-weight: 600; }
-  .history-date { color: var(--text3); }
+  .history-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .history-name { font-weight: 700; }
+  .history-date { color: var(--text3); font-weight: 500; }
   .history-del {
-    width: 26px; height: 26px; border-radius: 13px; border: none;
-    background: transparent; font-size: 13px; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 16px; border: none;
+    background: transparent; font-size: 14px; cursor: pointer;
     color: var(--text3); display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; transition: all 0.12s;
+    -webkit-tap-highlight-color: transparent;
   }
   .history-del:active { background: var(--red-bg); color: var(--red); }
 
@@ -1139,22 +1218,28 @@
 
   @media (max-width: 768px) {
     .stats-row { gap: 10px; }
-    .stat-card { padding: 18px 16px; }
-    .stat-num { font-size: 34px; }
+    .stat-card { padding: 20px 18px; }
+    .stat-num { font-size: 38px; }
     .room-grid { grid-template-columns: 1fr 1fr; }
     .date-label { display: none; }
-    .modal { width: 96%; }
+    .modal { width: 96%; border-radius: 28px; }
+    .modal-header { border-radius: 28px 28px 0 0; }
     .people-grid { grid-template-columns: repeat(2, 1fr); }
+    .person-btn { padding: 20px 8px; font-size: 17px; min-height: 64px; }
+    .task-emoji { font-size: 30px; }
+    .task-name { font-size: 20px; }
+    .room-card-name { font-size: 20px; }
   }
 
   /* ── Backup/Restore ── */
   .gear-btn {
-    width: 40px; height: 40px; border-radius: 20px; border: none;
-    background: var(--pill-bg); font-size: 18px; cursor: pointer;
+    width: 46px; height: 46px; border-radius: 23px; border: none;
+    background: var(--pill-bg); font-size: 20px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     font-family: inherit; transition: all 0.15s; flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
   }
-  .gear-btn:active { transform: scale(0.92); background: #ddd; }
+  .gear-btn:active { transform: scale(0.90); background: #ddd; }
   .backup-actions { display: flex; flex-direction: column; gap: 12px; }
   .backup-btn {
     padding: 18px 20px; border-radius: 16px; border: 2px solid #E8E8E3;
@@ -1180,10 +1265,13 @@
 <div id="app">
   <div class="topbar">
     <button class="home-btn" onclick="S.view='home';render();" title="Home">🏠</button>
-    <div class="pill-nav" id="mainNav" style="flex:1;"></div>
-    <button class="home-btn" onclick="toggleDarkMode()" title="Toggle dark/light mode" id="darkToggle">🌙</button>
-    <div id="syncDot" style="width:8px;height:8px;border-radius:4px;background:#EAB308;flex-shrink:0;" title="Connecting..."></div>
-    <button class="gear-btn" onclick="openAddDialog('backup')" title="Backup & Restore">⚙️</button>
+    <div id="topbarTitle" class="topbar-title">Home Suite Home</div>
+    <div class="pill-nav" id="mainNav" style="flex:1;min-width:0;"></div>
+    <div class="topbar-right">
+      <button class="home-btn" onclick="toggleDarkMode()" title="Toggle dark/light mode" id="darkToggle">🌙</button>
+      <div id="syncDot" style="width:8px;height:8px;border-radius:4px;background:#EAB308;flex-shrink:0;" title="Connecting..."></div>
+      <button class="gear-btn" onclick="openAddDialog('backup')" title="Backup & Restore">⚙️</button>
+    </div>
   </div>
   <div class="content" id="content"></div>
 </div>
@@ -2309,10 +2397,13 @@ function render() {
   try {
     // Hide nav on home, show on other views
     var navEl = document.getElementById('mainNav');
+    var titleEl = document.getElementById('topbarTitle');
     if (S.view === 'home') {
       navEl.innerHTML = '';
       navEl.style.display = 'none';
+      titleEl.style.display = 'block';
     } else {
+      titleEl.style.display = 'none';
       navEl.style.display = 'flex';
       navEl.innerHTML = function () {
         var tabs = [{
@@ -2343,9 +2434,16 @@ function render() {
           var active = S.view === t.id;
           var cleanActive = t.group === 'clean' && (S.view === 'cleaning' || S.view === 'map');
           var style = t.group === 'clean' && !active && cleanActive ? 'background:rgba(20,184,166,0.08);color:#0D9488;' : '';
-          return "<button class=\"pill-btn ".concat(active ? 'active' : '', "\" style=\"").concat(active && t.group === 'clean' ? 'background:#CCFBF1;color:#0D9488;' : style, "\" onclick=\"S.view='").concat(t.id, "';render();\">").concat(t.label, "</button>");
+          return "<button class=\"pill-btn ".concat(active ? 'active' : '', "\" data-tab=\"").concat(t.id, "\" style=\"").concat(active && t.group === 'clean' ? 'background:#CCFBF1;color:#0D9488;' : style, "\" onclick=\"S.view='").concat(t.id, "';render();\">").concat(t.label, "</button>");
         }).join('');
       }();
+      // Auto-scroll nav to show active tab
+      setTimeout(function() {
+        var activeBtn = navEl.querySelector('.pill-btn.active');
+        if (activeBtn) {
+          activeBtn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        }
+      }, 50);
     }
     var _el = document.getElementById('content');
     if (S.view === 'home') _el.innerHTML = renderHome();else if (S.view === 'cleaning') _el.innerHTML = renderDash();else if (S.view === 'map') _el.innerHTML = renderMap();else if (S.view === 'world') _el.innerHTML = renderWorld();else if (S.view === 'board') _el.innerHTML = renderBoard();else if (S.view === 'calendar') _el.innerHTML = renderCalendar();else if (S.view === 'groceries') _el.innerHTML = renderGroceries();else if (S.view === 'meals') _el.innerHTML = renderMeals();else _el.innerHTML = renderHome();
@@ -2424,64 +2522,165 @@ function render() {
 // ── DAILY QUOTES ──
 var HINDU_QUOTES = [{
   text: "You have the right to work, but never to the fruit of work.",
+  punjabi: "ਤੁਹਾਨੂੰ ਕੰਮ ਕਰਨ ਦਾ ਹੱਕ ਹੈ, ਪਰ ਫਲ ਦਾ ਨਹੀਂ।",
   source: "Bhagavad Gita 2.47"
 }, {
   text: "The soul is neither born, and nor does it die.",
+  punjabi: "ਆਤਮਾ ਨਾ ਜੰਮਦੀ ਹੈ, ਨਾ ਮਰਦੀ ਹੈ।",
   source: "Bhagavad Gita 2.20"
 }, {
-  text: "When meditation is mastered, the mind is unwavering like the flame of a candle in a windless place.",
+  text: "When meditation is mastered, the mind is unwavering like a candle in a windless place.",
+  punjabi: "ਜਦੋਂ ਧਿਆਨ ਪੱਕਾ ਹੋ ਜਾਵੇ, ਮਨ ਸ਼ਾਂਤ ਦੀਵੇ ਵਾਂਗ ਟਿਕ ਜਾਂਦਾ ਹੈ।",
   source: "Bhagavad Gita 6.19"
 }, {
   text: "Set thy heart upon thy work, but never on its reward.",
+  punjabi: "ਆਪਣਾ ਦਿਲ ਕੰਮ ਵਿੱਚ ਲਗਾਓ, ਫਲ ਵਿੱਚ ਨਹੀਂ।",
   source: "Bhagavad Gita"
 }, {
   text: "There is nothing lost or wasted in this life.",
+  punjabi: "ਇਸ ਜ਼ਿੰਦਗੀ ਵਿੱਚ ਕੁਝ ਵੀ ਗੁਆਚਦਾ ਜਾਂ ਬਰਬਾਦ ਨਹੀਂ ਹੁੰਦਾ।",
   source: "Bhagavad Gita 2.40"
 }, {
   text: "The mind acts like an enemy for those who do not control it.",
+  punjabi: "ਮਨ ਉਨ੍ਹਾਂ ਦਾ ਦੁਸ਼ਮਣ ਹੈ ਜੋ ਇਸ ਨੂੰ ਕਾਬੂ ਨਹੀਂ ਕਰਦੇ।",
   source: "Bhagavad Gita 6.6"
 }, {
   text: "A person can rise through the efforts of their own mind.",
+  punjabi: "ਇਨਸਾਨ ਆਪਣੇ ਮਨ ਦੀ ਮਿਹਨਤ ਨਾਲ ਉੱਠ ਸਕਦਾ ਹੈ।",
   source: "Bhagavad Gita 6.5"
 }, {
-  text: "Calmness, gentleness, silence, self-restraint, and purity: these are the disciplines of the mind.",
+  text: "Calmness, gentleness, silence, and purity: these are the disciplines of the mind.",
+  punjabi: "ਸ਼ਾਂਤੀ, ਨਰਮਾਈ, ਚੁੱਪ ਤੇ ਪਵਿੱਤਰਤਾ — ਇਹ ਮਨ ਦੇ ਅਨੁਸ਼ਾਸਨ ਹਨ।",
   source: "Bhagavad Gita 17.16"
 }, {
-  text: "Whatever happened, happened for the good. Whatever is happening, is happening for the good. Whatever will happen, will also happen for the good.",
+  text: "Whatever happened, happened for the good. Whatever will happen, will also happen for the good.",
+  punjabi: "ਜੋ ਹੋਇਆ ਚੰਗਾ ਹੋਇਆ। ਜੋ ਹੋਵੇਗਾ ਉਹ ਵੀ ਚੰਗਾ ਹੋਵੇਗਾ।",
   source: "Bhagavad Gita"
 }, {
-  text: "Change is the law of the universe. You can be a millionaire or a pauper in an instant.",
+  text: "Change is the law of the universe.",
+  punjabi: "ਬਦਲਾਅ ਹੀ ਕੁਦਰਤ ਦਾ ਨਿਯਮ ਹੈ।",
   source: "Bhagavad Gita"
 }, {
   text: "We are kept from our goal not by obstacles, but by a clear path to a lesser goal.",
-  source: "The Bhagavad Gita"
+  punjabi: "ਸਾਨੂੰ ਟੀਚੇ ਤੋਂ ਰੁਕਾਵਟਾਂ ਨਹੀਂ, ਛੋਟੇ ਟੀਚੇ ਦਾ ਸੌਖਾ ਰਾਹ ਰੋਕਦਾ ਹੈ।",
+  source: "Bhagavad Gita"
 }, {
   text: "Reshape yourself through the power of your will.",
+  punjabi: "ਆਪਣੀ ਇੱਛਾ ਸ਼ਕਤੀ ਨਾਲ ਆਪਣੇ ਆਪ ਨੂੰ ਬਦਲੋ।",
   source: "Bhagavad Gita 6.5"
 }, {
   text: "In the dark night of all beings, the disciplined one is awake.",
+  punjabi: "ਸਭ ਦੀ ਹਨੇਰੀ ਰਾਤ ਵਿੱਚ, ਅਨੁਸ਼ਾਸਿਤ ਇਨਸਾਨ ਜਾਗਦਾ ਹੈ।",
   source: "Bhagavad Gita 2.69"
 }, {
-  text: "He who has no attachments can really love others, for his love is pure and divine.",
+  text: "He who has no attachments can really love others, for his love is pure.",
+  punjabi: "ਜਿਸ ਦਾ ਕੋਈ ਮੋਹ ਨਹੀਂ, ਉਹੀ ਸੱਚਾ ਪਿਆਰ ਕਰ ਸਕਦਾ ਹੈ।",
   source: "Bhagavad Gita"
 }, {
   text: "Perform your obligatory duty, because action is indeed better than inaction.",
+  punjabi: "ਆਪਣਾ ਫ਼ਰਜ਼ ਨਿਭਾਓ, ਕਿਉਂਕਿ ਕੰਮ ਕਰਨਾ ਬੇਕਾਰ ਬੈਠਣ ਤੋਂ ਚੰਗਾ ਹੈ।",
   source: "Bhagavad Gita 3.8"
 }, {
-  text: "The wise see that there is action in the midst of inaction and inaction in the midst of action.",
+  text: "The wise see action in inaction and inaction in action.",
+  punjabi: "ਸਿਆਣੇ ਅਕਰਮ ਵਿੱਚ ਕਰਮ ਅਤੇ ਕਰਮ ਵਿੱਚ ਅਕਰਮ ਦੇਖਦੇ ਹਨ।",
   source: "Bhagavad Gita 4.18"
 }, {
-  text: "Fear not what is not real, never was and never will be. What is real, always was and cannot be destroyed.",
+  text: "Fear not what is not real. What is real, always was and cannot be destroyed.",
+  punjabi: "ਜੋ ਸੱਚ ਨਹੀਂ ਉਸ ਤੋਂ ਨਾ ਡਰੋ। ਜੋ ਸੱਚ ਹੈ ਉਹ ਸਦਾ ਹੈ।",
   source: "Bhagavad Gita 2.16"
 }, {
   text: "You came empty handed, and you will leave empty handed.",
+  punjabi: "ਤੁਸੀਂ ਖਾਲੀ ਹੱਥ ਆਏ, ਖਾਲੀ ਹੱਥ ਜਾਓਗੇ।",
   source: "Bhagavad Gita"
 }, {
   text: "Detachment is not that you own nothing, but that nothing owns you.",
+  punjabi: "ਵੈਰਾਗ ਇਹ ਨਹੀਂ ਕਿ ਤੁਹਾਡੇ ਕੋਲ ਕੁਝ ਨਹੀਂ, ਸਗੋਂ ਕੁਝ ਵੀ ਤੁਹਾਡਾ ਮਾਲਕ ਨਹੀਂ।",
   source: "Hindu Wisdom"
 }, {
   text: "As a man thinketh in his heart, so is he.",
+  punjabi: "ਜਿਵੇਂ ਇਨਸਾਨ ਦਿਲ ਵਿੱਚ ਸੋਚਦਾ ਹੈ, ਉਹ ਉਹੋ ਜਿਹਾ ਬਣ ਜਾਂਦਾ ਹੈ।",
   source: "Upanishads"
+}];
+var GURBANI_QUOTES = [{
+  text: "Even kings and emperors with heaps of wealth and vast dominion cannot compare with an ant filled with the love of God.",
+  punjabi: "ਰਾਜਾਂ ਦੇ ਰਾਜ ਵੀ ਉਸ ਕੀੜੀ ਦੇ ਬਰਾਬਰ ਨਹੀਂ ਜਿਸ ਵਿੱਚ ਰੱਬ ਦਾ ਪਿਆਰ ਹੈ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "Speak only that which will bring you honour.",
+  punjabi: "ਉਹੀ ਬੋਲੋ ਜਿਸ ਨਾਲ ਮਾਣ ਮਿਲੇ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "Truth is the highest virtue, but higher still is truthful living.",
+  punjabi: "ਸੱਚ ਸਭ ਤੋਂ ਉੱਚਾ ਹੈ, ਪਰ ਸੱਚਾ ਜੀਵਨ ਉਸ ਤੋਂ ਵੀ ਉੱਚਾ ਹੈ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "Let no one be proud of their birth; only God knows what shall happen hereafter.",
+  punjabi: "ਕੋਈ ਆਪਣੇ ਜਨਮ ਤੇ ਮਾਣ ਨਾ ਕਰੇ; ਅੱਗੇ ਕੀ ਹੋਣਾ ਰੱਬ ਜਾਣੇ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "From the One Light, the entire universe welled up. So who is good and who is bad?",
+  punjabi: "ਇੱਕ ਨੂਰ ਤੋਂ ਸਾਰੀ ਦੁਨੀਆ ਬਣੀ। ਫਿਰ ਚੰਗਾ ਕੌਣ ਤੇ ਮਾੜਾ ਕੌਣ?",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "Burn worldly love, rub the ashes and make ink of it, make the heart the pen, the intellect the writer.",
+  punjabi: "ਦੁਨੀਆ ਦੇ ਮੋਹ ਨੂੰ ਸਾੜ ਕੇ ਸਿਆਹੀ ਬਣਾ, ਦਿਲ ਨੂੰ ਕਲਮ ਤੇ ਅਕਲ ਨੂੰ ਲਿਖਾਰੀ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "Those who have loved are those that have found God.",
+  punjabi: "ਜਿਨ੍ਹਾਂ ਪਿਆਰ ਕੀਤਾ ਉਨ੍ਹਾਂ ਰੱਬ ਪਾਇਆ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "He who has no faith in himself can never have faith in God.",
+  punjabi: "ਜਿਸ ਨੂੰ ਆਪਣੇ ਆਪ ਤੇ ਯਕੀਨ ਨਹੀਂ, ਉਸ ਨੂੰ ਰੱਬ ਤੇ ਵੀ ਯਕੀਨ ਨਹੀਂ ਹੋ ਸਕਦਾ।",
+  source: "Guru Gobind Singh Ji"
+}, {
+  text: "Recognize the whole human race as one.",
+  punjabi: "ਮਾਨਸ ਕੀ ਜਾਤ ਸਬੈ ਏਕੈ ਪਹਿਚਾਨਬੋ।",
+  source: "Guru Gobind Singh Ji"
+}, {
+  text: "I am neither a child, a young man, nor an old man. I am beyond all these — I am the timeless One.",
+  punjabi: "ਨਾ ਮੈਂ ਬੱਚਾ, ਨਾ ਜਵਾਨ, ਨਾ ਬੁੱਢਾ — ਮੈਂ ਸਮੇਂ ਤੋਂ ਪਰੇ ਹਾਂ।",
+  source: "Guru Gobind Singh Ji"
+}, {
+  text: "Dwell in peace in the home of your own being, and the Messenger of Death will not be able to touch you.",
+  punjabi: "ਆਪਣੇ ਅੰਦਰ ਸ਼ਾਂਤੀ ਨਾਲ ਵੱਸੋ, ਮੌਤ ਦਾ ਡਰ ਛੂਹ ਨਹੀਂ ਸਕੇਗਾ।",
+  source: "Guru Arjan Dev Ji"
+}, {
+  text: "Whatever kind of seed is sown in a field, that kind of fruit will be produced.",
+  punjabi: "ਜੋ ਬੀਜ ਬੀਜੋਗੇ, ਉਹੀ ਫਲ ਮਿਲੇਗਾ।",
+  source: "Guru Arjan Dev Ji"
+}, {
+  text: "The world is a drama, staged in a dream.",
+  punjabi: "ਇਹ ਦੁਨੀਆ ਸੁਪਨੇ ਵਿੱਚ ਖੇਡਿਆ ਤਮਾਸ਼ਾ ਹੈ।",
+  source: "Guru Arjan Dev Ji"
+}, {
+  text: "Through shallow intellect, the mind becomes shallow, and one eats the fly along with the sweets.",
+  punjabi: "ਹਲਕੀ ਅਕਲ ਨਾਲ ਮਨ ਹਲਕਾ ਹੋ ਜਾਂਦਾ ਹੈ, ਮਿਠਾਈ ਨਾਲ ਮੱਖੀ ਵੀ ਖਾ ਜਾਂਦਾ ਹੈ।",
+  source: "Guru Amar Das Ji"
+}, {
+  text: "Do not wish for a life free of trials. Without them, you will not grow.",
+  punjabi: "ਮੁਸ਼ਕਲਾਂ ਤੋਂ ਬਿਨਾਂ ਜ਼ਿੰਦਗੀ ਨਾ ਮੰਗੋ — ਇਨ੍ਹਾਂ ਤੋਂ ਬਿਨਾਂ ਤੁਸੀਂ ਵਧੋਗੇ ਨਹੀਂ।",
+  source: "Guru Tegh Bahadur Ji"
+}, {
+  text: "He who does not fear, and does not frighten others, is truly wise.",
+  punjabi: "ਜੋ ਨਾ ਡਰੇ ਤੇ ਨਾ ਡਰਾਵੇ, ਉਹੀ ਅਸਲ ਸਿਆਣਾ ਹੈ।",
+  source: "Guru Tegh Bahadur Ji"
+}, {
+  text: "The dawn is the friend of all. It scatters the darkness.",
+  punjabi: "ਸਵੇਰ ਸਭ ਦੀ ਮਿੱਤਰ ਹੈ — ਇਹ ਹਨੇਰਾ ਖਿਲਾਰ ਦਿੰਦੀ ਹੈ।",
+  source: "Guru Granth Sahib Ji"
+}, {
+  text: "By Guru's grace, the mind is calmed and one obtains the treasure of liberation.",
+  punjabi: "ਗੁਰੂ ਦੀ ਕਿਰਪਾ ਨਾਲ ਮਨ ਸ਼ਾਂਤ ਹੁੰਦਾ ਹੈ ਤੇ ਮੁਕਤੀ ਦਾ ਖ਼ਜ਼ਾਨਾ ਮਿਲਦਾ ਹੈ।",
+  source: "Guru Granth Sahib Ji"
+}, {
+  text: "One who conquers the mind, conquers the world.",
+  punjabi: "ਮਨ ਜੀਤੇ ਜਗ ਜੀਤ।",
+  source: "Guru Nanak Dev Ji"
+}, {
+  text: "Where there is forgiveness, there is God Himself.",
+  punjabi: "ਜਿੱਥੇ ਮਾਫ਼ੀ ਹੈ, ਉੱਥੇ ਰੱਬ ਆਪ ਹੈ।",
+  source: "Kabir Ji · Guru Granth Sahib"
 }];
 var ENGLISH_QUOTES = [{
   text: "The only way to do great work is to love what you do.",
@@ -2575,8 +2774,10 @@ function renderHome() {
     year: 'numeric'
   });
 
-  // Daily quotes
-  var hq = HINDU_QUOTES[seededRandom('hq' + todayStr()) % HINDU_QUOTES.length];
+  // Daily quotes — Gurbani at night, Bhagavad Gita during the day
+  var isDark = document.documentElement.classList.contains('dark');
+  var quotePool = isDark ? GURBANI_QUOTES : HINDU_QUOTES;
+  var hq = quotePool[seededRandom('hq' + todayStr() + (isDark ? 'dark' : 'light')) % quotePool.length];
   var eq = ENGLISH_QUOTES[seededRandom('eq' + todayStr()) % ENGLISH_QUOTES.length];
 
   // Gather notifications
@@ -2664,7 +2865,7 @@ function renderHome() {
   }).join('');
   return '<div class="home-view">' +
   // HERO — visible from across the room
-  '<div class="home-hero">' + '<div class="home-hero-top">' + '<div class="home-greeting-text">SAT SRI AKAL · NAMASTE · HIIIEEEE!</div>' + '<div style="font-size:13px;font-weight:700;color:#0D9488;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px;animation:fadeIn 0.8s ease both;">THE SHARMA FAMILY · ਸ਼ਰਮਾ ਪਰਿਵਾਰ</div>' + '<div class="home-time" id="homeTime">' + timeStr + '</div>' + '<div class="home-date">' + dateStr + '</div>' + function () {
+  '<div class="home-hero">' + '<div class="home-hero-top">' + '<div class="home-greeting-text">SAT SRI AKAL <span style="color:#14B8A6">⏺</span> NAMASTE <span style="color:#14B8A6">⏺</span> HIIIEEE!!!</div>' + '<div style="font-size:13px;font-weight:700;color:#0D9488;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px;animation:fadeIn 0.8s ease both;">THE SHARMA FAMILY · ਸ਼ਰਮਾ ਪਰਿਵਾਰ</div>' + '<div class="home-time" id="homeTime">' + timeStr + '</div>' + '<div class="home-date">' + dateStr + '</div>' + function () {
     // Show Brampton weather if available
     var brampton = savedWeather.find(function (c) {
       return c.city === 'Brampton';
@@ -2682,15 +2883,47 @@ function renderHome() {
     // Trigger a fetch if not cached
     if (!weatherCache[wKey]) fetchWeatherFor(brampton);
     return '';
-  }() + '</div>' +
-  // Quote pinned to bottom of hero
-  '<div class="home-quote-single home-quote-hindu-single">' + '<div class="home-quote-text-big">"' + hq.text + '"</div>' + '<div class="home-quote-source-big">🙏 ' + hq.source + '</div>' + '</div>' + '</div>' + (
+  }() +
+  // Quote — right under date/weather inside hero
+  (function() {
+    var quoteIcon = isDark ? 'ੴ' : '🙏';
+    return '<div class="home-quote-inline">' +
+      '<div class="home-quote-punjabi">' + hq.punjabi + '</div>' +
+      '<div class="home-quote-english">"' + hq.text + '" — ' + quoteIcon + ' ' + hq.source + '</div>' +
+    '</div>';
+  }()) +
+  '</div>' +
+  // Close hero
+  '</div>' + (
   // NOTIFICATION BAR — click to expand
   notifChips.length > 0 ? '<div class="home-notif-bar" onclick="openNotifPopup()">' + notifChips + '</div>' : '') +
   // BELOW THE FOLD — scroll to see
   '<div class="home-below">' +
   // Nav cards
-  '<div class="home-section">' + '<div class="home-section-title">⚡ Quick Access</div>' + '<div class="home-nav-grid">' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#F0FDFA,#CCFBF1);border-color:rgba(20,184,166,0.12);" onclick="S.view=\'cleaning\';render();">' + '<div class="home-nav-emoji">🧹</div>' + '<div class="home-nav-title">Safai · ਸਫ਼ਾਈ</div>' + '<div class="home-nav-sub">' + (overdueRooms.length > 0 ? '<span class="home-nav-badge" style="background:var(--red-bg);color:var(--red);">' + overdueRooms.length + ' overdue</span>' : 'Sab theek ✓') + '</div>' + '</button>' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-color:rgba(59,130,246,0.1);" onclick="S.view=\'world\';render();">' + '<div class="home-nav-emoji">🌍</div>' + '<div class="home-nav-title">Duniya · ਦੁਨੀਆ</div>' + '<div class="home-nav-sub">Ghariyan te Mausam</div>' + '</button>' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A40);border-color:rgba(251,191,36,0.12);" onclick="S.view=\'board\';render();">' + '<div class="home-nav-emoji">📌</div>' + '<div class="home-nav-title">Board · ਬੋਰਡ</div>' + '<div class="home-nav-sub">' + savedNotes.length + ' notes · ' + savedCountdowns.length + ' events</div>' + '</button>' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#DBEAFE,#BFDBFE40);border-color:rgba(59,130,246,0.1);" onclick="S.view=\'calendar\';render();">' + '<div class="home-nav-emoji">📅</div>' + '<div class="home-nav-title">Calendar · ਕੈਲੰਡਰ</div>' + '<div class="home-nav-sub">' + calendarEvents.length + ' events</div>' + '</button>' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border-color:rgba(34,197,94,0.1);" onclick="S.view=\'groceries\';render();">' + '<div class="home-nav-emoji">🛒</div>' + '<div class="home-nav-title">Karyana · ਕਰਿਆਨਾ</div>' + '<div class="home-nav-sub">' + savedGroceries.length + ' in dukaan · ' + shoppingList.length + ' in list</div>' + '</button>' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border-color:rgba(251,146,60,0.1);" onclick="S.view=\'meals\';render();">' + '<div class="home-nav-emoji">🍛</div>' + '<div class="home-nav-title">Khana · ਖਾਣਾ</div>' + '<div class="home-nav-sub">Hafte da khana</div>' + '</button>' + '<button class="home-nav-card" style="background:linear-gradient(135deg,#EDE9FE,#DDD6FE40);border-color:rgba(139,92,246,0.1);" onclick="S.view=\'map\';render();">' + '<div class="home-nav-emoji">🗺️</div>' + '<div class="home-nav-title">Naksha · ਨਕਸ਼ਾ</div>' + '<div class="home-nav-sub">Floor map</div>' + '</button>' + '</div>' + '</div>' + '</div>' + '</div>';
+  '<div class="home-section">' + '<div class="home-nav-grid">' +
+  '<button class="home-nav-card" onclick="S.view=\'cleaning\';render();">' +
+    '<div class="home-nav-emoji">🧹</div><div class="home-nav-title">Safai</div>' +
+    (overdueRooms.length > 0 ? '<span class="home-nav-badge" style="background:var(--red);color:#fff;">' + overdueRooms.length + '</span>' : '') +
+  '</button>' +
+  '<button class="home-nav-card" onclick="S.view=\'map\';render();">' +
+    '<div class="home-nav-emoji">🗺️</div><div class="home-nav-title">Naksha</div>' +
+  '</button>' +
+  '<button class="home-nav-card" onclick="S.view=\'world\';render();">' +
+    '<div class="home-nav-emoji">🌍</div><div class="home-nav-title">Duniya</div>' +
+  '</button>' +
+  '<button class="home-nav-card" onclick="S.view=\'board\';render();">' +
+    '<div class="home-nav-emoji">📌</div><div class="home-nav-title">Board</div>' +
+  '</button>' +
+  '<button class="home-nav-card" onclick="S.view=\'calendar\';render();">' +
+    '<div class="home-nav-emoji">📅</div><div class="home-nav-title">Calendar</div>' +
+  '</button>' +
+  '<button class="home-nav-card" onclick="S.view=\'groceries\';render();">' +
+    '<div class="home-nav-emoji">🛒</div><div class="home-nav-title">Karyana</div>' +
+  '</button>' +
+  '<button class="home-nav-card" onclick="S.view=\'meals\';render();">' +
+    '<div class="home-nav-emoji">🍛</div><div class="home-nav-title">Khana</div>' +
+  '</button>' +
+  '</div>' + '</div>' + '</div>' + '</div>';
 }
 
 // ── FAMILY CALENDAR (unified — countdowns + events) ──
@@ -3157,26 +3390,50 @@ function renderDash() {
   var cl = ALL_IDS.filter(function (id) {
     return worst(id) === 'green';
   });
+  // Priority hero
+  var priorityHtml = '';
+  if (ov.length > 0) {
+    var roomNames = ov.slice(0, 4).map(function(id) { return ALL_META[id].name; }).join(', ');
+    var extra = ov.length > 4 ? ' + ' + (ov.length - 4) + ' more' : '';
+    priorityHtml = '<div class="dash-priority">' +
+      '<div class="dash-priority-title">⚠️ Needs Cleaning Today</div>' +
+      '<div class="dash-priority-rooms">' + roomNames + extra + '</div>' +
+      '<div class="dash-priority-sub">These rooms haven\'t been cleaned in over ' + THRESHOLDS.yellow + ' days</div>' +
+      '</div>';
+  } else if (wa.length > 0) {
+    var warnNames = wa.slice(0, 3).map(function(id) { return ALL_META[id].name; }).join(', ');
+    priorityHtml = '<div class="dash-priority" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:rgba(234,179,8,0.12);">' +
+      '<div class="dash-priority-title" style="color:var(--yellow);">👀 Getting Dirty</div>' +
+      '<div class="dash-priority-rooms">' + warnNames + '</div>' +
+      '<div class="dash-priority-sub">Clean these soon before they go overdue</div>' +
+      '</div>';
+  } else {
+    priorityHtml = '<div class="dash-priority all-clean">' +
+      '<div class="dash-priority-title">✨ Sab Saaf Hai!</div>' +
+      '<div class="dash-priority-rooms">Every room is clean!</div>' +
+      '<div class="dash-priority-sub">Amazing teamwork — keep it up 💪</div>' +
+      '</div>';
+  }
   var secs = [{
-    t: 'Needs Attention',
+    t: 'Needs Attention · Dhyan Do (ਧਿਆਨ ਦਿਓ)',
     e: '🔴',
     ids: ov,
     c: 'var(--red)',
-    em: 'All caught up!'
+    em: 'All caught up! 🎉'
   }, {
-    t: 'Getting Dirty',
+    t: 'Getting Dirty · Ganda Ho Riha (ਗੰਦਾ ਹੋ ਰਿਹਾ)',
     e: '🟡',
     ids: wa,
     c: 'var(--yellow)',
-    em: 'Nothing here'
+    em: 'Nothing here — sab theek!'
   }, {
-    t: 'Clean',
+    t: 'Clean · Saaf (ਸਾਫ਼)',
     e: '🟢',
     ids: cl,
     c: 'var(--green)',
     em: 'Nothing yet — go clean something!'
   }];
-  return "<div class=\"dashboard\">\n    ".concat(renderLeaderboard(), "\n    ").concat(renderMotivation(), "\n    <div class=\"stats-row\">\n      ").concat([{
+  return "<div class=\"dashboard\">\n    ".concat(priorityHtml, "\n    ").concat(renderLeaderboard(), "\n    ").concat(renderMotivation(), "\n    <div class=\"stats-row\">\n      ").concat([{
     n: ov.length,
     l: 'Overdue',
     c: 'var(--red)'
@@ -3439,7 +3696,7 @@ function renderMap() {
       var dot = '';
       if (rm && centers[roomId] && centers[roomId].r === r && centers[roomId].c === c - 1 && !mapEditing) {
         var ws = worst(roomId);
-        dot = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:4px;background:' + sColor(ws) + ';box-shadow:0 0 4px ' + sColor(ws) + '80;"></div>';
+        dot = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:5px;background:' + sColor(ws) + ';box-shadow:0 0 6px ' + sColor(ws) + '90;' + (ws === 'red' ? 'animation:pulse 2s infinite;' : '') + '"></div>';
       }
       gridHtml += '<div class="' + cls + '" id="gc-' + r + '-' + c + '" data-room="' + (roomId || '') + '" style="' + bg + '" ' + 'onmousedown="handleGridDown(\'' + S.floor + '\',' + r + ',' + c + ')" ' + 'onmouseenter="' + (mapEditing ? 'handleGridMove(\'' + S.floor + '\',' + r + ',' + c + ')' : 'highlightRoom(\'' + (roomId || '') + '\')') + '" ' + 'ontouchstart="handleGridDown(\'' + S.floor + '\',' + r + ',' + c + ');event.preventDefault();" ' + 'ontouchmove="(function(e){var t=e.touches[0];var el=document.elementFromPoint(t.clientX,t.clientY);if(el&&el.id&&el.id.startsWith(\'gc-\')){var p=el.id.split(\'-\');handleGridMove(\'' + S.floor + '\',parseInt(p[1]),parseInt(p[2]));}e.preventDefault();})(event)">' + label + statusLabel2 + dot + '</div>';
     }
@@ -3469,7 +3726,7 @@ function renderModal() {
       st = getStatus(days);
     var hist = rec[task.key] && rec[task.key].history || [],
       lat = hist[0];
-    return "<div class=\"task-section\" style=\"border-color:".concat(sColor(st), "20\">\n          <div class=\"task-header\">\n            <div class=\"task-left\"><span class=\"task-emoji\">").concat(task.emoji, "</span>\n              <div><div class=\"task-name\">").concat(task.label, "</div>\n              <div class=\"task-status-text\" style=\"color:").concat(sColor(st), "\">").concat(sLabelLong(days), "</div></div>\n            </div>\n            <div style=\"width:14px;height:14px;border-radius:7px;background:").concat(sColor(st), ";box-shadow:0 0 8px ").concat(sColor(st), "60\"></div>\n          </div>\n          ").concat(lat ? "<div class=\"task-latest\" style=\"background:".concat(sBg(st), "\">Last: <strong>").concat(lat.by, "</strong> on ").concat(lat.date).concat(lat.time ? ' at ' + lat.time : '', "</div>") : '', "\n          <div class=\"quick-label\">Quick mark \xB7 Ajj Safai Kiti (\u0A05\u0A71\u0A1C \u0A38\u0A2B\u0A3C\u0A3E\u0A08 \u0A15\u0A40\u0A24\u0A40):</div>\n          <div class=\"people-grid\">\n            ").concat(PEOPLE.map(function (p) {
+    return "<div class=\"task-section\" style=\"border-color:".concat(sColor(st), "20\">\n          <div class=\"task-header\">\n            <div class=\"task-left\"><span class=\"task-emoji\">").concat(task.emoji, "</span>\n              <div><div class=\"task-name\">").concat(task.label, "</div>\n              <div class=\"task-status-text\" style=\"color:").concat(sColor(st), "\">").concat(sLabelLong(days), "</div></div>\n            </div>\n            <div style=\"width:18px;height:18px;border-radius:9px;background:").concat(sColor(st), ";box-shadow:0 0 12px ").concat(sColor(st), "60").concat(st === 'red' ? ';animation:pulse 2s infinite' : '', "\"></div>\n          </div>\n          ").concat(lat ? "<div class=\"task-latest\" style=\"background:".concat(sBg(st), "\">Last: <strong>").concat(lat.by, "</strong> on ").concat(lat.date).concat(lat.time ? ' at ' + lat.time : '', "</div>") : '', "\n          <div class=\"quick-label\">Quick mark \xB7 Ajj Safai Kiti (\u0A05\u0A71\u0A1C \u0A38\u0A2B\u0A3C\u0A3E\u0A08 \u0A15\u0A40\u0A24\u0A40):</div>\n          <div class=\"people-grid\">\n            ").concat(PEOPLE.map(function (p) {
       return "<button class=\"person-btn\" onclick=\"qMark('".concat(m.id, "','").concat(task.key, "','").concat(p, "')\">").concat(p, "</button>");
     }).join(''), "\n          </div>\n          ").concat(hist.length ? "<div class=\"history-section\"><div class=\"history-label\">History \xB7 Itihaas (\u0A07\u0A24\u0A3F\u0A39\u0A3E\u0A38)</div>\n            <div class=\"history-list\">".concat(hist.slice(0, 15).map(function (e, ei) {
       return "<div class=\"history-row\"><div class=\"history-left\"><span class=\"history-name\">".concat(e.by, "</span><span class=\"history-date\">").concat(e.date).concat(e.time ? ' · ' + e.time : '', "</span></div><button class=\"history-del\" onclick=\"if(confirm('Delete this entry?'))removeCleanHistory('").concat(m.id, "','").concat(task.key, "',").concat(ei, ")\">\u2715</button></div>");
@@ -6647,6 +6904,26 @@ function renderMeals() {
   var weekLabel = startStr + ' — ' + endStr;
   if (mealsWeekOffset === 0) weekLabel += ' (This Week)';else if (mealsWeekOffset === 1) weekLabel += ' (Next Week)';else if (mealsWeekOffset === -1) weekLabel += ' (Last Week)';
   var dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+  // Reorder: today first, then the rest of the week in order
+  var todayIdx = -1;
+  dates.forEach(function(d, i) {
+    if (formatDateKey(d) === todayKey) todayIdx = i;
+  });
+  var reordered = [];
+  if (mealsWeekOffset === 0 && todayIdx >= 0) {
+    for (var ri = 0; ri < 7; ri++) {
+      var idx = (todayIdx + ri) % 7;
+      reordered.push({ date: dates[idx], dayName: dayNames[idx], isPast: false });
+    }
+  } else {
+    // Not current week — keep Mon→Sun order, mark past days
+    dates.forEach(function(d, i) {
+      var dk = formatDateKey(d);
+      reordered.push({ date: d, dayName: dayNames[i], isPast: dk < todayKey });
+    });
+  }
+
   var defaultSlots = [{
     key: 'breakfast',
     label: 'Breakfast · Nashta (ਨਾਸ਼ਤਾ)',
@@ -6665,16 +6942,21 @@ function renderMeals() {
     emoji: '🌙'
   }];
   var daysHtml = '';
-  dates.forEach(function (d, i) {
+  reordered.forEach(function (item) {
+    var d = item.date;
     var dk = formatDateKey(d);
     var isToday = dk === todayKey;
+    var isPast = !isToday && dk < todayKey;
     var dayLabel = d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
     });
-    daysHtml += '<div class="meal-day-card ' + (isToday ? 'today' : '') + '">';
+    var cardClass = 'meal-day-card';
+    if (isToday) cardClass += ' today';
+    else if (isPast) cardClass += ' past';
+    daysHtml += '<div class="' + cardClass + '">';
     daysHtml += '<div class="meal-day-header">';
-    daysHtml += '<div class="meal-day-name">' + dayNames[i] + '</div>';
+    daysHtml += '<div class="meal-day-name">' + item.dayName + (isToday ? ' · TODAY' : '') + '</div>';
     daysHtml += '<div class="meal-day-date">' + dayLabel + '</div>';
     daysHtml += '</div>';
 
@@ -6917,6 +7199,7 @@ function toggleDarkMode() {
   }
   localStorage.setItem('chore-darkmode', darkModeOverride);
   checkDarkMode();
+  if (S.view === 'home') render();
 }
 checkDarkMode();
 setInterval(checkDarkMode, 60000);
