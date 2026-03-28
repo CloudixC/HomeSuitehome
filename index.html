@@ -1664,13 +1664,13 @@ function save() { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(S.rec));}c
 
 function worst(id) {
   const r=S.rec[id]; if(!r) return 'red';
-  const sw=r.swept?.history?.length?daysBetween(r.swept.history[0].date):Infinity;
-  const mo=r.mopped?.history?.length?daysBetween(r.mopped.history[0].date):Infinity;
-  const vc=r.vacuumed?.history?.length?daysBetween(r.vacuumed.history[0].date):Infinity;
+  const sw=(r.swept && r.swept.history && r.swept.history.length)?daysBetween(r.swept.history[0].date):Infinity;
+  const mo=(r.mopped && r.mopped.history && r.mopped.history.length)?daysBetween(r.mopped.history[0].date):Infinity;
+  const vc=(r.vacuumed && r.vacuumed.history && r.vacuumed.history.length)?daysBetween(r.vacuumed.history[0].date):Infinity;
   return getStatus(Math.max(sw,mo,vc));
 }
 function tDays(id,tk) {
-  const r=S.rec[id]; if(!r?.[tk]?.history?.length) return Infinity;
+  const r=S.rec[id]; if(!(r && r[tk] && r[tk].history && r[tk].history.length)) return Infinity;
   return daysBetween(r[tk].history[0].date);
 }
 function qMark(id,tk,person) {
@@ -1885,7 +1885,7 @@ function getSlackerReport() {
   ALL_IDS.forEach(id => {
     const rec = S.rec[id];
     TASKS.forEach(task => {
-      const hist = rec?.[task.key]?.history || [];
+      const hist = (rec && rec[task.key] && rec[task.key].history) || [];
       hist.forEach(entry => {
         const days = daysBetween(entry.date);
         if (days < lastClean[entry.by]) lastClean[entry.by] = days;
@@ -1918,7 +1918,7 @@ function getMVP() {
   ALL_IDS.forEach(id => {
     const rec = S.rec[id];
     TASKS.forEach(task => {
-      const hist = rec?.[task.key]?.history || [];
+      const hist = (rec && rec[task.key] && rec[task.key].history) || [];
       hist.forEach(entry => {
         const days = daysBetween(entry.date);
         if (days <= 7) { // count only last 7 days
@@ -2154,7 +2154,7 @@ function renderHome() {
           var brampton = savedWeather.find(function(c) { return c.city === 'Brampton'; });
           if (!brampton) brampton = { lat: 43.73, lon: -79.76 };
           var wKey = brampton.lat + ',' + brampton.lon;
-          var w = weatherCache[wKey]?.data;
+          var w = (weatherCache[wKey] && weatherCache[wKey].data);
           if (w) {
             var we = weatherEmoji(w.weather_code);
             return '<div style="font-size:16px;color:var(--text3);font-weight:500;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;animation:fadeIn 1.2s ease both;">' +
@@ -2482,7 +2482,7 @@ function getPointsThisWeek() {
   ALL_IDS.forEach(function(id) {
     var rec = S.rec[id];
     TASKS.forEach(function(task) {
-      var hist = rec?.[task.key]?.history || [];
+      var hist = (rec && rec[task.key] && rec[task.key].history) || [];
       hist.forEach(function(entry) {
         if (entry.date >= mondayStr && points[entry.by] !== undefined) {
           points[entry.by] += POINTS_PER_CLEAN;
@@ -2521,7 +2521,7 @@ function getPointsAllTime() {
   ALL_IDS.forEach(function(id) {
     var rec = S.rec[id];
     TASKS.forEach(function(task) {
-      var hist = rec?.[task.key]?.history || [];
+      var hist = (rec && rec[task.key] && rec[task.key].history) || [];
       hist.forEach(function(entry) {
         if (points[entry.by] !== undefined) points[entry.by] += POINTS_PER_CLEAN;
       });
@@ -3011,7 +3011,7 @@ function renderModal() {
       <div class="room-quip room-quip-${worst(m.id)}">${getRoomQuip(m.id)}</div>
       ${TASKS.map(task=>{
         const days=tDays(m.id,task.key), st=getStatus(days);
-        const hist=rec[task.key]?.history||[], lat=hist[0];
+        const hist=(rec[task.key] && rec[task.key].history)||[], lat=hist[0];
         return `<div class="task-section" style="border-color:${sColor(st)}20">
           <div class="task-header">
             <div class="task-left"><span class="task-emoji">${task.emoji}</span>
@@ -3733,7 +3733,7 @@ const NOTE_COLORS = [
 
 function saveNotes() { localStorage.setItem(NOTES_STORAGE, JSON.stringify(savedNotes)); }
 function removeNote(idx) {
-  var noteId = savedNotes[idx]?._id;
+  var noteId = (savedNotes[idx] && savedNotes[idx]._id);
   savedNotes.splice(idx, 1); saveNotes(); render();
   cloudRemoveNote(noteId);
 }
@@ -3805,7 +3805,7 @@ function renderWorld() {
         <div class="weather-grid">
           ${savedWeather.map((c, i) => {
             const key = `${c.lat},${c.lon}`;
-            const w = weatherCache[key]?.data;
+            const w = (weatherCache[key] && weatherCache[key].data);
             if (!w) return `
               <div class="weather-card">
                 <button class="weather-remove" onclick="removeWeather(${i})">✕</button>
@@ -4219,8 +4219,8 @@ function addGroceryItem(name, category) {
 }
 
 function removeFromStore(idx) {
-  var gId = savedGroceries[idx]?._id;
-  var name = savedGroceries[idx]?.name;
+  var gId = (savedGroceries[idx] && savedGroceries[idx]._id);
+  var name = (savedGroceries[idx] && savedGroceries[idx].name);
   savedGroceries.splice(idx, 1);
   // Also remove from shopping list if there
   var sIdx = shoppingList.findIndex(function(s) { return s.name === name; });
@@ -4522,7 +4522,7 @@ function renderShoppingListView(tabHtml) {
   h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
   h += '<div class="grocery-summary"><span>' + uncheckedCount + ' to buy</span><span>·</span><span>' + checkedCount + ' got it</span>' + (runTotal > 0 ? '<span>·</span><span style="color:var(--green);font-weight:700;" id="shopTotal">$' + runTotal.toFixed(2) + '</span>' : '<span id="shopTotal"></span>') + '</div>';
   h += '<div style="display:flex;gap:8px;">';
-  if (checkedCount > 0) h += '<button class="grocery-clear-btn" onclick="clearCheckedFromList()">Clear done</button>';
+  if (checkedCount > 0) h += '<button class="grocery-clear-btn" onclick="if(confirm(\'Clear all checked items?\'))clearCheckedFromList()">Clear done</button>';
   h += '<button class="grocery-clear-btn" onclick="if(confirm(\'Clear entire shopping list?\'))clearShoppingList()">Clear all</button>';
   h += '</div></div>';
 
