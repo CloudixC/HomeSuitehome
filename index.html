@@ -1991,6 +1991,7 @@ function getMVP() {
 
 // ── RENDER ──
 function render() {
+  try {
 
   // Hide nav on home, show on other views
   var navEl = document.getElementById('mainNav');
@@ -2073,6 +2074,11 @@ function render() {
   } else if (evOverlay) {
     evOverlay.style.display = 'none';
     evOverlay.innerHTML = '';
+  }
+  } catch(err) {
+    var el = document.getElementById('content');
+    if (el) el.innerHTML = '<div style="padding:40px;color:red;font-size:18px;word-break:break-all;"><strong>Error:</strong> ' + err.message + '<br><br><small>' + (err.stack || '').split('<').join('&lt;').substring(0,500) + '</small></div>';
+    console.error('Render error:', err);
   }
 }
 
