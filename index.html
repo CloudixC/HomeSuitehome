@@ -1174,7 +1174,7 @@
   .backup-ok { background: var(--green-bg); color: var(--green); }
   .backup-err { background: var(--red-bg); color: var(--red); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.1/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -1182,6 +1182,7 @@
     <button class="home-btn" onclick="S.view='home';render();" title="Home">🏠</button>
     <div class="pill-nav" id="mainNav" style="flex:1;"></div>
     <button class="home-btn" onclick="toggleDarkMode()" title="Toggle dark/light mode" id="darkToggle">🌙</button>
+    <div id="syncDot" style="width:8px;height:8px;border-radius:4px;background:#EAB308;flex-shrink:0;" title="Connecting..."></div>
     <button class="gear-btn" onclick="openAddDialog('backup')" title="Backup & Restore">⚙️</button>
   </div>
   <div class="content" id="content"></div>
@@ -1195,23 +1196,33 @@ var supabase = null;
 var supabaseReady = false;
 
 try {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  // Sign in anonymously
-  supabase.auth.signInAnonymously().then(function() {
-    supabaseReady = true;
-    console.log('Supabase connected!');
-    // Show green dot on gear button
-    var gear = document.querySelector('.gear-btn');
-    if (gear) gear.title = '☁️ Connected · Settings';
-    syncFromSupabase();
-    subscribeToRealtime();
-  }).catch(function(e) {
-    console.warn('Supabase auth failed, using local only:', e);
-    var gear = document.querySelector('.gear-btn');
-    if (gear) gear.title = '⚠️ Offline · Settings';
-  });
+  if (!window.supabase) {
+    console.error('Supabase JS library not loaded!');
+    document.getElementById('syncDot').style.background = '#EF4444';
+  } else {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase client created, signing in...');
+    supabase.auth.signInAnonymously().then(function(result) {
+      if (result.error) {
+        console.error('Auth error:', result.error.message);
+        document.getElementById('syncDot').style.background = '#EF4444';
+        document.getElementById('syncDot').title = result.error.message;
+        return;
+      }
+      supabaseReady = true;
+      console.log('Supabase connected!');
+      document.getElementById('syncDot').style.background = '#22C55E';
+      document.getElementById('syncDot').title = 'Cloud connected';
+      syncFromSupabase();
+      subscribeToRealtime();
+    }).catch(function(e) {
+      console.error('Auth catch:', e);
+      document.getElementById('syncDot').style.background = '#EF4444';
+    });
+  }
 } catch(e) {
-  console.warn('Supabase init failed, using local only:', e);
+  console.error('Init failed:', e);
+  try { document.getElementById('syncDot').style.background = '#EF4444'; } catch(x) {}
 }
 
 // ── SYNC FUNCTIONS ──
