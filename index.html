@@ -422,7 +422,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 
-  .content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; animation: pageFadeIn 0.3s ease; }
+  .content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
   @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* Dashboard */
@@ -1174,15 +1174,7 @@
   .backup-ok { background: var(--green-bg); color: var(--green); }
   .backup-err { background: var(--red-bg); color: var(--red); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.1/dist/umd/supabase.min.js"></script>
-<script>
-// Fallback if jsdelivr fails
-if (!window.supabase) {
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  document.head.appendChild(s);
-}
-</script>
+<script>var _supa = null;</script>
 </head>
 <body>
 <div id="app">
@@ -1197,22 +1189,86 @@ if (!window.supabase) {
 </div>
 
 <script>
-// ── SUPABASE SETUP ──
-const SUPABASE_URL = 'https://lcsoqdbtrxyufspbwhju.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjc29xZGJ0cnh5dWZzcGJ3aGp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDE2MzksImV4cCI6MjA5MDIxNzYzOX0.A0BMzBggyS202PL2h2v0ETQpghWj8MX_DPg7LBBCigQ';
-var _supa = window.supabase; // save reference before anything overwrites it
-var sb = null; // our client instance
+// ── SUPABASE SETUP — lightweight REST client (no SDK needed, works on iOS 10+) ──
+var SUPABASE_URL = 'https://lcsoqdbtrxyufspbwhju.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjc29xZGJ0cnh5dWZzcGJ3aGp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDE2MzksImV4cCI6MjA5MDIxNzYzOX0.A0BMzBggyS202PL2h2v0ETQpghWj8MX_DPg7LBBCigQ';
+var sb = null;
 var supabaseReady = false;
 
-function initSupabase() {
-  if (!_supa || !_supa.createClient) {
-    console.error('Supabase JS library not available');
-    document.getElementById('syncDot').style.background = '#EF4444';
-    return;
+// Lightweight Supabase REST wrapper
+function SupaRest(url, key) {
+  var self = {};
+  var baseUrl = url + '/rest/v1';
+  var headers = {
+    'apikey': key,
+    'Authorization': 'Bearer ' + key,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+
+  function request(method, path, body) {
+    var opts = { method: method, headers: headers };
+    if (body) opts.body = JSON.stringify(body);
+    return fetch(baseUrl + path, opts).then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { return { data: null, error: { message: t } }; });
+      return r.json().then(function(d) { return { data: d, error: null }; });
+    }).catch(function(e) { return { data: null, error: { message: e.message } }; });
   }
+
+  self.from = function(table) {
+    var _table = table;
+    var _filters = '';
+    var _order = '';
+    var _limit = '';
+
+    var chain = {};
+    chain.select = function(cols) {
+      return { 
+        order: function(col, opts) { _order = '&order=' + col + '.' + (opts && opts.ascending ? 'asc' : 'desc'); return this; },
+        limit: function(n) { _limit = '&limit=' + n; return this; },
+        eq: function(col, val) { _filters += '&' + col + '=eq.' + encodeURIComponent(val); return this; },
+        single: function() { 
+          return request('GET', '/' + _table + '?select=' + (cols || '*') + _filters + _order + '&limit=1').then(function(r) {
+            if (r.data && r.data.length > 0) return { data: r.data[0], error: null };
+            return { data: null, error: null };
+          });
+        },
+        then: function(fn) { return request('GET', '/' + _table + '?select=' + (cols || '*') + _filters + _order + _limit).then(fn); }
+      };
+    };
+    chain.insert = function(row) {
+      return request('POST', '/' + _table, row);
+    };
+    chain.upsert = function(row) {
+      var opts = { method: 'POST', headers: {} };
+      for (var k in headers) opts.headers[k] = headers[k];
+      opts.headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
+      opts.body = JSON.stringify(row);
+      return fetch(baseUrl + '/' + _table, opts).then(function(r) {
+        return r.json().then(function(d) { return { data: d, error: null }; });
+      }).catch(function(e) { return { data: null, error: { message: e.message } }; });
+    };
+    chain.update = function(row) {
+      return { eq: function(col, val) { 
+        return request('PATCH', '/' + _table + '?' + col + '=eq.' + encodeURIComponent(val), row);
+      }};
+    };
+    chain.delete = function() {
+      return { 
+        eq: function(col, val) { return request('DELETE', '/' + _table + '?' + col + '=eq.' + encodeURIComponent(val)); },
+        neq: function(col, val) { return request('DELETE', '/' + _table + '?' + col + '=neq.' + encodeURIComponent(val)); }
+      };
+    };
+    return chain;
+  };
+
+  return self;
+}
+
+function initSupabase() {
   try {
-    sb = _supa.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('Supabase client created, testing connection...');
+    sb = SupaRest(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase REST client created, testing...');
     sb.from('family_data').select('key').limit(1).then(function(result) {
       if (result.error) {
         console.error('Supabase error:', result.error.message);
@@ -1223,7 +1279,8 @@ function initSupabase() {
       console.log('Supabase connected!');
       document.getElementById('syncDot').style.background = '#22C55E';
       syncFromSupabase();
-      subscribeToRealtime();
+      // Poll for changes every 30 seconds (replaces realtime subscriptions)
+      setInterval(syncFromSupabase, 3000);
     });
   } catch(e) {
     console.error('Supabase init error:', e);
@@ -1235,39 +1292,45 @@ initSupabase();
 
 // ── SYNC FUNCTIONS ──
 var _syncing = false; // prevent cloud-save during pull
+var _lastSyncHash = '';
 
-async function syncFromSupabase() {
+function syncFromSupabase() {
   if (!supabaseReady || _syncing) return;
   _syncing = true;
-  try {
-    // Fetch notes
-    var notesRes = await sb.from('family_notes').select('*').order('created_at', { ascending: false });
+  var hashParts = [];
+
+  sb.from('family_notes').select('*').order('created_at', { ascending: false }).then(function(notesRes) {
     if (notesRes.data) {
+      hashParts.push('n' + notesRes.data.length + (notesRes.data[0] ? notesRes.data[0].id : ''));
       savedNotes = notesRes.data.map(function(n) {
         return { text: n.text, author: n.author, colorIdx: n.color_idx || 0, createdAt: n.created_at, _id: n.id };
       });
       localStorage.setItem(NOTES_STORAGE, JSON.stringify(savedNotes));
     }
-    // Fetch groceries
-    var grocRes = await sb.from('grocery_items').select('*').order('added_at', { ascending: true });
+    return sb.from('grocery_items').select('*').order('added_at', { ascending: true });
+  }).then(function(grocRes) {
     if (grocRes.data && grocRes.data.length > 0) {
+      hashParts.push('g' + grocRes.data.length + (grocRes.data[0] ? grocRes.data[0].id : ''));
       savedGroceries = grocRes.data.map(function(g) {
         return { name: g.name, category: g.category, checked: g.checked, punjabi: g.punjabi || '', purchases: g.purchases || [], addedAt: g.added_at, _id: g.id };
       });
       localStorage.setItem(GROCERY_STORAGE, JSON.stringify(savedGroceries));
     }
-    // Fetch calendar events
-    var calRes = await sb.from('calendar_events').select('*').order('date', { ascending: true });
+    return sb.from('calendar_events').select('*').order('date', { ascending: true });
+  }).then(function(calRes) {
     if (calRes.data) {
+      hashParts.push('c' + calRes.data.length);
       calendarEvents = calRes.data.map(function(e) {
         return { id: e.id, title: e.title, date: e.date, time: e.time || '', person: e.person || '', colorIdx: e.color_idx || 0, _id: e.id };
       });
       localStorage.setItem(CALENDAR_STORAGE, JSON.stringify(calendarEvents));
     }
-    // Fetch all family_data rows
-    var dataRes = await sb.from('family_data').select('*');
+    return sb.from('family_data').select('*');
+  }).then(function(dataRes) {
     if (dataRes.data) {
+      hashParts.push('d' + dataRes.data.length);
       dataRes.data.forEach(function(row) {
+        hashParts.push(row.key + (row.updated_at || ''));
         try {
           if (row.key === 'cleaning' && row.data) { S.rec = row.data; localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
           if (row.key === 'meals' && row.data) { savedMeals = row.data; localStorage.setItem('chore-meals-v1', JSON.stringify(savedMeals)); }
@@ -1282,145 +1345,138 @@ async function syncFromSupabase() {
         } catch(e) { console.warn('Error loading family_data key:', row.key, e); }
       });
     }
-    render();
-  } catch(e) { console.warn('Sync from Supabase failed:', e); }
-  _syncing = false;
+    var newHash = hashParts.join('|');
+    if (newHash !== _lastSyncHash) {
+      _lastSyncHash = newHash;
+      render();
+    }
+    _syncing = false;
+  }).catch(function(e) {
+    console.warn('Sync from Supabase failed:', e);
+    _syncing = false;
+  });
 }
 
 function subscribeToRealtime() {
-  if (!supabaseReady) return;
-  sb.channel('notes-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'family_notes' }, function() { syncFromSupabase(); })
-    .subscribe();
-  sb.channel('grocery-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'grocery_items' }, function() { syncFromSupabase(); })
-    .subscribe();
-  sb.channel('calendar-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, function() { syncFromSupabase(); })
-    .subscribe();
-  sb.channel('data-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'family_data' }, function() { syncFromSupabase(); })
-    .subscribe();
+  // Polling every 30s replaces WebSocket subscriptions (set up in initSupabase)
 }
 
 // ── Cloud push helper — upserts a key into family_data ──
-async function cloudSaveData(key, data) {
+function cloudSaveData(key, data) {
   if (!supabaseReady || _syncing) return;
-  try {
-    await sb.from('family_data').upsert({ key: key, data: data, updated_at: new Date().toISOString() });
-  } catch(e) { console.warn('Cloud save failed for', key, e); }
+  sb.from('family_data').upsert({ key: key, data: data, updated_at: new Date().toISOString() });
 }
 
 // Cloud-aware add/remove/update functions for NOTES
-async function cloudAddNote(text, colorIdx, author) {
+function cloudAddNote(text, colorIdx, author) {
   if (!supabaseReady) return;
   try {
-    await sb.from('family_notes').insert({ text: text, author: author, color_idx: colorIdx });
+    sb.from('family_notes').insert({ text: text, author: author, color_idx: colorIdx });
   } catch(e) { console.warn('Cloud add note failed:', e); }
 }
 
-async function cloudRemoveNote(noteId) {
+function cloudRemoveNote(noteId) {
   if (!supabaseReady || !noteId) return;
   try {
-    await sb.from('family_notes').delete().eq('id', noteId);
+    sb.from('family_notes').delete().eq('id', noteId);
   } catch(e) { console.warn('Cloud remove note failed:', e); }
 }
 
 // Cloud-aware for GROCERIES
-async function cloudAddGrocery(name, category, punjabi) {
+function cloudAddGrocery(name, category, punjabi) {
   if (!supabaseReady) return;
   try {
-    await sb.from('grocery_items').insert({ name: name, category: category, punjabi: punjabi || '' });
+    sb.from('grocery_items').insert({ name: name, category: category, punjabi: punjabi || '' });
   } catch(e) { console.warn('Cloud add grocery failed:', e); }
 }
 
-async function cloudToggleGrocery(groceryId, checked) {
+function cloudToggleGrocery(groceryId, checked) {
   if (!supabaseReady || !groceryId) return;
   try {
-    await sb.from('grocery_items').update({ checked: checked }).eq('id', groceryId);
+    sb.from('grocery_items').update({ checked: checked }).eq('id', groceryId);
   } catch(e) { console.warn('Cloud toggle grocery failed:', e); }
 }
 
-async function cloudRemoveGrocery(groceryId) {
+function cloudRemoveGrocery(groceryId) {
   if (!supabaseReady || !groceryId) return;
   try {
-    await sb.from('grocery_items').delete().eq('id', groceryId);
+    sb.from('grocery_items').delete().eq('id', groceryId);
   } catch(e) { console.warn('Cloud remove grocery failed:', e); }
 }
 
-async function cloudClearCheckedGroceries() {
+function cloudClearCheckedGroceries() {
   if (!supabaseReady) return;
   try {
-    await sb.from('grocery_items').delete().eq('checked', true);
+    sb.from('grocery_items').delete().eq('checked', true);
   } catch(e) { console.warn('Cloud clear checked failed:', e); }
 }
 
-async function cloudClearAllGroceries() {
+function cloudClearAllGroceries() {
   if (!supabaseReady) return;
   try {
-    await sb.from('grocery_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    sb.from('grocery_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   } catch(e) { console.warn('Cloud clear all failed:', e); }
 }
 
 // Cloud-aware for CALENDAR
-async function cloudAddCalEvent(title, date, time, person, colorIdx) {
+function cloudAddCalEvent(title, date, time, person, colorIdx) {
   if (!supabaseReady) return;
   try {
-    await sb.from('calendar_events').insert({ title: title, date: date, time: time || '', person: person || '', color_idx: colorIdx || 0 });
+    sb.from('calendar_events').insert({ title: title, date: date, time: time || '', person: person || '', color_idx: colorIdx || 0 });
   } catch(e) { console.warn('Cloud add cal event failed:', e); }
 }
 
-async function cloudRemoveCalEvent(eventId) {
+function cloudRemoveCalEvent(eventId) {
   if (!supabaseReady || !eventId) return;
   try {
-    await sb.from('calendar_events').delete().eq('id', eventId);
+    sb.from('calendar_events').delete().eq('id', eventId);
   } catch(e) { console.warn('Cloud remove cal event failed:', e); }
 }
 
 // Cloud-aware for FAMILY INFO
-async function cloudSaveFamilyInfo() {
+function cloudSaveFamilyInfo() {
   cloudSaveData('info', familyInfo);
 }
 
 // Cloud-aware for CLEANING
-async function cloudSaveCleaning() {
+function cloudSaveCleaning() {
   cloudSaveData('cleaning', S.rec);
 }
 
 // Cloud-aware for MEALS
-async function cloudSaveMeals() {
+function cloudSaveMeals() {
   cloudSaveData('meals', savedMeals);
 }
 
 // Cloud-aware for EXTRA MEAL SLOTS
-async function cloudSaveExtraMeals() {
+function cloudSaveExtraMeals() {
   cloudSaveData('extra_meals', extraMealSlots);
 }
 
 // Cloud-aware for SHOPPING LIST
-async function cloudSaveShopList() {
+function cloudSaveShopList() {
   cloudSaveData('shoplist', shoppingList);
 }
 
 // Cloud-aware for COUNTDOWNS
-async function cloudSaveCountdowns() {
+function cloudSaveCountdowns() {
   cloudSaveData('countdowns', savedCountdowns);
 }
 
 // Cloud-aware for FLOOR MAP
-async function cloudSaveGrid(floorName) {
+function cloudSaveGrid(floorName) {
   var key = floorName === 'Main Floor' ? 'grid_main' : 'grid_top';
   var data = JSON.parse(localStorage.getItem('chore-grid-' + floorName.toLowerCase().replace(/ /g, '-')) || '{}');
   cloudSaveData(key, data);
 }
 
 // Cloud-aware for WORLD CLOCKS
-async function cloudSaveClocks() {
+function cloudSaveClocks() {
   cloudSaveData('clocks', savedClocks);
 }
 
 // Cloud-aware for WEATHER CITIES
-async function cloudSaveWeatherCities() {
+function cloudSaveWeatherCities() {
   cloudSaveData('weather_cities', savedWeather);
 }
 
@@ -1658,9 +1714,9 @@ function load() {
       });
     }
     else { S.rec=initRec(); save(); }
-  } catch { S.rec=initRec(); }
+  } catch(e) { S.rec=initRec(); }
 }
-function save() { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(S.rec));}catch{} }
+function save() { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(S.rec));}catch(e){} }
 
 function worst(id) {
   const r=S.rec[id]; if(!r) return 'red';
@@ -2072,7 +2128,7 @@ const SHOP_STORAGE = 'chore-shoplist-v1';
 var shoppingList = [];
 
 function loadShoppingList() {
-  try { shoppingList = JSON.parse(localStorage.getItem(SHOP_STORAGE)) || []; } catch { shoppingList = []; }
+  try { shoppingList = JSON.parse(localStorage.getItem(SHOP_STORAGE)) || []; } catch(e) { shoppingList = []; }
 }
 function saveShoppingList() { localStorage.setItem(SHOP_STORAGE, JSON.stringify(shoppingList)); cloudSaveShopList(); }
 
@@ -2242,7 +2298,7 @@ var calViewMode = 'month'; // 'month' or 'week'
 var calCompact = false;
 
 function loadCalendar() {
-  try { calendarEvents = JSON.parse(localStorage.getItem(CALENDAR_STORAGE)) || []; } catch { calendarEvents = []; }
+  try { calendarEvents = JSON.parse(localStorage.getItem(CALENDAR_STORAGE)) || []; } catch(e) { calendarEvents = []; }
 }
 function saveCalendar() { localStorage.setItem(CALENDAR_STORAGE, JSON.stringify(calendarEvents)); }
 
@@ -2563,7 +2619,7 @@ const INFO_STORAGE = 'chore-info-v1';
 var familyInfo = {};
 
 function loadFamilyInfo() {
-  try { familyInfo = JSON.parse(localStorage.getItem(INFO_STORAGE)) || {}; } catch { familyInfo = {}; }
+  try { familyInfo = JSON.parse(localStorage.getItem(INFO_STORAGE)) || {}; } catch(e) { familyInfo = {}; }
   if (!familyInfo.wifi) familyInfo.wifi = { name: '', password: '' };
   if (!familyInfo.emergency) familyInfo.emergency = [
     { label: 'Family Doctor', value: '' },
@@ -2732,7 +2788,7 @@ function loadGrid(floorName) {
   try {
     var saved = localStorage.getItem(getGridKey(floorName));
     if (saved) return JSON.parse(saved);
-  } catch {}
+  } catch(e) {}
   return null;
 }
 
@@ -3111,12 +3167,12 @@ let addSearch = '';
 let clockInterval = null;
 
 function loadWorld() {
-  try { savedClocks = JSON.parse(localStorage.getItem(CLOCK_STORAGE)) || []; } catch { savedClocks = []; }
-  try { savedWeather = JSON.parse(localStorage.getItem(WEATHER_STORAGE)) || []; } catch { savedWeather = []; }
-  try { savedCountdowns = JSON.parse(localStorage.getItem(COUNTDOWN_STORAGE)) || []; } catch { savedCountdowns = []; }
-  try { savedNotes = JSON.parse(localStorage.getItem(NOTES_STORAGE)) || []; } catch { savedNotes = []; }
-  try { savedGroceries = JSON.parse(localStorage.getItem(GROCERY_STORAGE)) || []; } catch { savedGroceries = []; }
-  try { savedMeals = JSON.parse(localStorage.getItem(MEALS_STORAGE)) || {}; } catch { savedMeals = {}; }
+  try { savedClocks = JSON.parse(localStorage.getItem(CLOCK_STORAGE)) || []; } catch(e) { savedClocks = []; }
+  try { savedWeather = JSON.parse(localStorage.getItem(WEATHER_STORAGE)) || []; } catch(e) { savedWeather = []; }
+  try { savedCountdowns = JSON.parse(localStorage.getItem(COUNTDOWN_STORAGE)) || []; } catch(e) { savedCountdowns = []; }
+  try { savedNotes = JSON.parse(localStorage.getItem(NOTES_STORAGE)) || []; } catch(e) { savedNotes = []; }
+  try { savedGroceries = JSON.parse(localStorage.getItem(GROCERY_STORAGE)) || []; } catch(e) { savedGroceries = []; }
+  try { savedMeals = JSON.parse(localStorage.getItem(MEALS_STORAGE)) || {}; } catch(e) { savedMeals = {}; }
   // Defaults if empty
   if (savedClocks.length === 0) {
     savedClocks = [
@@ -3415,7 +3471,7 @@ function getTimeIn(tz) {
   try {
     const now = new Date();
     return now.toLocaleTimeString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  } catch { return '--:--:--'; }
+  } catch(e) { return '--:--:--'; }
 }
 
 function getTimeParts(tz) {
@@ -3424,7 +3480,7 @@ function getTimeParts(tz) {
     const str = now.toLocaleString('en-US', { timeZone: tz, hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const [h, m, s] = str.split(':').map(Number);
     return { h: h % 12, m, s };
-  } catch { return { h: 0, m: 0, s: 0 }; }
+  } catch(e) { return { h: 0, m: 0, s: 0 }; }
 }
 
 function clockSVG(tz, idx) {
@@ -3473,7 +3529,7 @@ function getDateIn(tz) {
   try {
     const now = new Date();
     return now.toLocaleDateString('en-US', { timeZone: tz, weekday: 'short', month: 'short', day: 'numeric' });
-  } catch { return ''; }
+  } catch(e) { return ''; }
 }
 
 function getOffsetDiff(tz) {
@@ -3484,7 +3540,7 @@ function getOffsetDiff(tz) {
     const diffH = Math.round((remote - local) / 3600000);
     if (diffH === 0) return 'Same time';
     return (diffH > 0 ? '+' : '') + diffH + 'h from here';
-  } catch { return ''; }
+  } catch(e) { return ''; }
 }
 
 // WMO weather code to emoji + description
@@ -3501,20 +3557,18 @@ function weatherEmoji(code) {
   return { icon: '🌡️', desc: 'Unknown' };
 }
 
-async function fetchWeatherFor(cityObj) {
-  const key = `${cityObj.lat},${cityObj.lon}`;
-  const cached = weatherCache[key];
-  if (cached && (Date.now() - cached.fetchedAt) < 600000) return; // cache 10min
+function fetchWeatherFor(cityObj) {
+  var key = cityObj.lat + ',' + cityObj.lon;
+  var cached = weatherCache[key];
+  if (cached && (Date.now() - cached.fetchedAt) < 600000) return;
 
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${cityObj.lat}&longitude=${cityObj.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&temperature_unit=celsius&timezone=auto`;
-    const res = await fetch(url);
-    const data = await res.json();
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + cityObj.lat + '&longitude=' + cityObj.lon + '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&temperature_unit=celsius&timezone=auto';
+  fetch(url).then(function(res) { return res.json(); }).then(function(data) {
     weatherCache[key] = { data: data.current, fetchedAt: Date.now() };
     render();
-  } catch (e) {
+  }).catch(function(e) {
     console.warn('Weather fetch failed for', cityObj.city, e);
-  }
+  });
 }
 
 function fetchAllWeather() {
@@ -3700,18 +3754,21 @@ const CURRENCY_PAIRS = [
   { from: 'CAD', to: 'EUR', flag1: '🇨🇦', flag2: '🇪🇺' },
 ];
 
-async function fetchCurrency() {
-  if (currencyRates && (Date.now() - currencyFetchedAt) < 3600000) return; // cache 1hr
-  try {
-    const res = await fetch('https://api.frankfurter.app/latest?from=CAD&to=INR,USD,GBP,EUR');
-    const data = await res.json();
-    // Also fetch USD->INR
-    const res2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=INR');
-    const data2 = await res2.json();
-    currencyRates = { ...data.rates, 'USD_INR': data2.rates.INR, base_date: data.date };
+function fetchCurrency() {
+  if (currencyRates && (Date.now() - currencyFetchedAt) < 3600000) return;
+  fetch('https://api.frankfurter.app/latest?from=CAD&to=INR,USD,GBP,EUR').then(function(res) {
+    return res.json();
+  }).then(function(data) {
+    currencyRates = data.rates;
+    currencyRates.base_date = data.date;
+    return fetch('https://api.frankfurter.app/latest?from=USD&to=INR');
+  }).then(function(res2) {
+    return res2.json();
+  }).then(function(data2) {
+    currencyRates['USD_INR'] = data2.rates.INR;
     currencyFetchedAt = Date.now();
     render();
-  } catch (e) { console.warn('Currency fetch failed', e); }
+  }).catch(function(e) { console.warn('Currency fetch failed', e); });
 }
 
 function getCurrencyRate(from, to) {
@@ -4667,7 +4724,7 @@ const EXTRA_MEALS_STORAGE = 'chore-extra-meals-v1';
 var extraMealSlots = {}; // key: dateKey, value: array of slot ids like ['extra-1','extra-2']
 
 function loadExtraMeals() {
-  try { extraMealSlots = JSON.parse(localStorage.getItem(EXTRA_MEALS_STORAGE)) || {}; } catch { extraMealSlots = {}; }
+  try { extraMealSlots = JSON.parse(localStorage.getItem(EXTRA_MEALS_STORAGE)) || {}; } catch(e) { extraMealSlots = {}; }
 }
 function saveExtraMeals() { localStorage.setItem(EXTRA_MEALS_STORAGE, JSON.stringify(extraMealSlots)); cloudSaveExtraMeals(); }
 
