@@ -423,6 +423,39 @@
     .home-nav-title { font-size: 9px; }
   }
 
+  /* ── iPad sweet spot (768–1024px) ── */
+  @media (min-width: 768px) and (max-width: 1080px) {
+    .dashboard { padding: 24px 28px; }
+    .stats-row { gap: 12px; }
+    .stat-card { padding: 24px 20px; }
+    .stat-num { font-size: 44px; }
+    .room-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .room-card { padding: 22px; min-height: 100px; }
+    .room-card-name { font-size: 20px; }
+    .meals-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 12px; }
+    .meal-day-card { padding: 18px 16px; min-height: 180px; }
+    .meal-day-card.today { order: -1; }
+    .people-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .person-btn { padding: 18px 8px; font-size: 16px; min-height: 58px; }
+    .modal { width: 88%; max-width: 640px; }
+    .grid-container { max-width: 100%; }
+    .home-time { font-size: 100px; }
+    .home-greeting-text { font-size: 14px; }
+    .home-below { padding: 16px 28px 24px; }
+    .home-nav-grid { gap: 14px; }
+    .home-nav-card { width: 80px; height: 80px; }
+    .home-nav-emoji { font-size: 28px; }
+    .home-nav-title { font-size: 10px; }
+    .clocks-grid { grid-template-columns: repeat(3, 1fr); }
+    .weather-grid { grid-template-columns: repeat(2, 1fr); }
+    .countdowns-grid { grid-template-columns: repeat(3, 1fr); }
+    .notes-grid { grid-template-columns: repeat(3, 1fr); }
+    .world-view { padding: 24px; }
+    .grocery-view { padding: 24px; }
+    .motiv-card { font-size: 15px; padding: 18px 22px; }
+    .leaderboard-card { padding: 20px 22px; }
+  }
+
   .pill-nav {
     display: flex; background: var(--pill-bg); border-radius: 18px; padding: 4px; gap: 2px;
     overflow-x: auto; -webkit-overflow-scrolling: touch;
@@ -1012,11 +1045,11 @@
     .cal-week-grid { grid-template-columns: repeat(3, 1fr); }
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1080px) {
     .meals-grid { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 600px) {
-    .meals-grid { grid-template-columns: repeat(2, 1fr); }
+    .meals-grid { grid-template-columns: 1fr; }
   }
 
   /* ── Grid Map ── */
@@ -1216,11 +1249,11 @@
     font-size: 11px; color: var(--text3); font-weight: 600; margin-top: 4px;
   }
 
-  @media (max-width: 768px) {
-    .stats-row { gap: 10px; }
-    .stat-card { padding: 20px 18px; }
-    .stat-num { font-size: 38px; }
-    .room-grid { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 767px) {
+    .stats-row { gap: 8px; }
+    .stat-card { padding: 18px 14px; }
+    .stat-num { font-size: 32px; }
+    .room-grid { grid-template-columns: 1fr; }
     .date-label { display: none; }
     .modal { width: 96%; border-radius: 28px; }
     .modal-header { border-radius: 28px 28px 0 0; }
@@ -1229,6 +1262,7 @@
     .task-emoji { font-size: 30px; }
     .task-name { font-size: 20px; }
     .room-card-name { font-size: 20px; }
+    .meals-grid { grid-template-columns: 1fr !important; }
   }
 
   /* ── Backup/Restore ── */
