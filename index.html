@@ -1175,6 +1175,14 @@
   .backup-err { background: var(--red-bg); color: var(--red); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.1/dist/umd/supabase.min.js"></script>
+<script>
+// Fallback if jsdelivr fails
+if (!window.supabase) {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  document.head.appendChild(s);
+}
+</script>
 </head>
 <body>
 <div id="app">
@@ -1195,16 +1203,19 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 var supabase = null;
 var supabaseReady = false;
 
-try {
+function initSupabase() {
   if (!window.supabase) {
     console.error('Supabase JS library not loaded!');
     document.getElementById('syncDot').style.background = '#EF4444';
-  } else {
+    return;
+  }
+  try {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('Supabase client created, signing in...');
-    supabase.auth.signInAnonymously().then(function(result) {
+    console.log('Supabase client created, testing connection...');
+    // Test with a simple read instead of auth
+    supabase.from('family_data').select('key').limit(1).then(function(result) {
       if (result.error) {
-        console.error('Auth error:', result.error.message);
+        console.error('Supabase connection error:', result.error.message);
         document.getElementById('syncDot').style.background = '#EF4444';
         document.getElementById('syncDot').title = result.error.message;
         return;
@@ -1215,14 +1226,18 @@ try {
       document.getElementById('syncDot').title = 'Cloud connected';
       syncFromSupabase();
       subscribeToRealtime();
-    }).catch(function(e) {
-      console.error('Auth catch:', e);
-      document.getElementById('syncDot').style.background = '#EF4444';
     });
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    document.getElementById('syncDot').style.background = '#EF4444';
   }
-} catch(e) {
-  console.error('Init failed:', e);
-  try { document.getElementById('syncDot').style.background = '#EF4444'; } catch(x) {}
+}
+
+// Try immediately, retry after 2s if library not loaded yet
+if (window.supabase) {
+  initSupabase();
+} else {
+  setTimeout(initSupabase, 2000);
 }
 
 // ── SYNC FUNCTIONS ──
