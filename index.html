@@ -1200,14 +1200,26 @@ try {
   supabase.auth.signInAnonymously().then(function() {
     supabaseReady = true;
     console.log('Supabase connected!');
+    // Show green dot on gear button
+    var gear = document.querySelector('.gear-btn');
+    if (gear) gear.title = '☁️ Connected · Settings';
     syncFromSupabase();
     subscribeToRealtime();
-  }).catch(function(e) { console.warn('Supabase auth failed, using local only:', e); });
-} catch(e) { console.warn('Supabase init failed, using local only:', e); }
+  }).catch(function(e) {
+    console.warn('Supabase auth failed, using local only:', e);
+    var gear = document.querySelector('.gear-btn');
+    if (gear) gear.title = '⚠️ Offline · Settings';
+  });
+} catch(e) {
+  console.warn('Supabase init failed, using local only:', e);
+}
 
 // ── SYNC FUNCTIONS ──
+var _syncing = false; // prevent cloud-save during pull
+
 async function syncFromSupabase() {
-  if (!supabaseReady) return;
+  if (!supabaseReady || _syncing) return;
+  _syncing = true;
   try {
     // Fetch notes
     var notesRes = await supabase.from('family_notes').select('*').order('created_at', { ascending: false });
@@ -1215,7 +1227,7 @@ async function syncFromSupabase() {
       savedNotes = notesRes.data.map(function(n) {
         return { text: n.text, author: n.author, colorIdx: n.color_idx || 0, createdAt: n.created_at, _id: n.id };
       });
-      saveNotes();
+      localStorage.setItem(NOTES_STORAGE, JSON.stringify(savedNotes));
     }
     // Fetch groceries
     var grocRes = await supabase.from('grocery_items').select('*').order('added_at', { ascending: true });
@@ -1223,7 +1235,7 @@ async function syncFromSupabase() {
       savedGroceries = grocRes.data.map(function(g) {
         return { name: g.name, category: g.category, checked: g.checked, punjabi: g.punjabi || '', purchases: g.purchases || [], addedAt: g.added_at, _id: g.id };
       });
-      saveGroceries();
+      localStorage.setItem(GROCERY_STORAGE, JSON.stringify(savedGroceries));
     }
     // Fetch calendar events
     var calRes = await supabase.from('calendar_events').select('*').order('date', { ascending: true });
@@ -1231,28 +1243,29 @@ async function syncFromSupabase() {
       calendarEvents = calRes.data.map(function(e) {
         return { id: e.id, title: e.title, date: e.date, time: e.time || '', person: e.person || '', colorIdx: e.color_idx || 0, _id: e.id };
       });
-      saveCalendar();
+      localStorage.setItem(CALENDAR_STORAGE, JSON.stringify(calendarEvents));
     }
     // Fetch all family_data rows
     var dataRes = await supabase.from('family_data').select('*');
     if (dataRes.data) {
       dataRes.data.forEach(function(row) {
         try {
-          if (row.key === 'cleaning' && row.data) { S.rec = row.data; save(); }
+          if (row.key === 'cleaning' && row.data) { S.rec = row.data; localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }
           if (row.key === 'meals' && row.data) { savedMeals = row.data; localStorage.setItem('chore-meals-v1', JSON.stringify(savedMeals)); }
           if (row.key === 'extra_meals' && row.data) { extraMealSlots = row.data; localStorage.setItem('chore-extra-meals-v1', JSON.stringify(extraMealSlots)); }
-          if (row.key === 'shoplist' && row.data) { shoppingList = row.data; saveShoppingList(); }
-          if (row.key === 'countdowns' && row.data) { savedCountdowns = row.data; saveCountdowns(); }
+          if (row.key === 'shoplist' && row.data) { shoppingList = row.data; localStorage.setItem(SHOP_STORAGE, JSON.stringify(shoppingList)); }
+          if (row.key === 'countdowns' && row.data) { savedCountdowns = row.data; localStorage.setItem(COUNTDOWN_STORAGE, JSON.stringify(savedCountdowns)); }
           if (row.key === 'grid_main' && row.data) { localStorage.setItem('chore-grid-main-floor', JSON.stringify(row.data)); }
           if (row.key === 'grid_top' && row.data) { localStorage.setItem('chore-grid-top-floor', JSON.stringify(row.data)); }
           if (row.key === 'clocks' && row.data) { savedClocks = row.data; localStorage.setItem('chore-clocks-v1', JSON.stringify(savedClocks)); }
           if (row.key === 'weather_cities' && row.data) { savedWeather = row.data; localStorage.setItem('chore-weather-v1', JSON.stringify(savedWeather)); }
-          if (row.key === 'info' && row.data) { familyInfo = row.data; saveFamilyInfo(); }
+          if (row.key === 'info' && row.data) { familyInfo = row.data; localStorage.setItem(INFO_STORAGE, JSON.stringify(familyInfo)); }
         } catch(e) { console.warn('Error loading family_data key:', row.key, e); }
       });
     }
     render();
   } catch(e) { console.warn('Sync from Supabase failed:', e); }
+  _syncing = false;
 }
 
 function subscribeToRealtime() {
@@ -1273,7 +1286,7 @@ function subscribeToRealtime() {
 
 // ── Cloud push helper — upserts a key into family_data ──
 async function cloudSaveData(key, data) {
-  if (!supabaseReady) return;
+  if (!supabaseReady || _syncing) return;
   try {
     await supabase.from('family_data').upsert({ key: key, data: data, updated_at: new Date().toISOString() });
   } catch(e) { console.warn('Cloud save failed for', key, e); }
