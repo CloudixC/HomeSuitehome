@@ -1200,30 +1200,28 @@ if (!window.supabase) {
 // ── SUPABASE SETUP ──
 const SUPABASE_URL = 'https://lcsoqdbtrxyufspbwhju.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjc29xZGJ0cnh5dWZzcGJ3aGp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDE2MzksImV4cCI6MjA5MDIxNzYzOX0.A0BMzBggyS202PL2h2v0ETQpghWj8MX_DPg7LBBCigQ';
-var supabase = null;
+var _supa = window.supabase; // save reference before anything overwrites it
+var sb = null; // our client instance
 var supabaseReady = false;
 
 function initSupabase() {
-  if (!window.supabase) {
-    console.error('Supabase JS library not loaded!');
+  if (!_supa || !_supa.createClient) {
+    console.error('Supabase JS library not available');
     document.getElementById('syncDot').style.background = '#EF4444';
     return;
   }
   try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sb = _supa.createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('Supabase client created, testing connection...');
-    // Test with a simple read instead of auth
-    supabase.from('family_data').select('key').limit(1).then(function(result) {
+    sb.from('family_data').select('key').limit(1).then(function(result) {
       if (result.error) {
-        console.error('Supabase connection error:', result.error.message);
+        console.error('Supabase error:', result.error.message);
         document.getElementById('syncDot').style.background = '#EF4444';
-        document.getElementById('syncDot').title = result.error.message;
         return;
       }
       supabaseReady = true;
       console.log('Supabase connected!');
       document.getElementById('syncDot').style.background = '#22C55E';
-      document.getElementById('syncDot').title = 'Cloud connected';
       syncFromSupabase();
       subscribeToRealtime();
     });
@@ -1233,12 +1231,7 @@ function initSupabase() {
   }
 }
 
-// Try immediately, retry after 2s if library not loaded yet
-if (window.supabase) {
-  initSupabase();
-} else {
-  setTimeout(initSupabase, 2000);
-}
+initSupabase();
 
 // ── SYNC FUNCTIONS ──
 var _syncing = false; // prevent cloud-save during pull
@@ -1248,7 +1241,7 @@ async function syncFromSupabase() {
   _syncing = true;
   try {
     // Fetch notes
-    var notesRes = await supabase.from('family_notes').select('*').order('created_at', { ascending: false });
+    var notesRes = await sb.from('family_notes').select('*').order('created_at', { ascending: false });
     if (notesRes.data) {
       savedNotes = notesRes.data.map(function(n) {
         return { text: n.text, author: n.author, colorIdx: n.color_idx || 0, createdAt: n.created_at, _id: n.id };
@@ -1256,7 +1249,7 @@ async function syncFromSupabase() {
       localStorage.setItem(NOTES_STORAGE, JSON.stringify(savedNotes));
     }
     // Fetch groceries
-    var grocRes = await supabase.from('grocery_items').select('*').order('added_at', { ascending: true });
+    var grocRes = await sb.from('grocery_items').select('*').order('added_at', { ascending: true });
     if (grocRes.data && grocRes.data.length > 0) {
       savedGroceries = grocRes.data.map(function(g) {
         return { name: g.name, category: g.category, checked: g.checked, punjabi: g.punjabi || '', purchases: g.purchases || [], addedAt: g.added_at, _id: g.id };
@@ -1264,7 +1257,7 @@ async function syncFromSupabase() {
       localStorage.setItem(GROCERY_STORAGE, JSON.stringify(savedGroceries));
     }
     // Fetch calendar events
-    var calRes = await supabase.from('calendar_events').select('*').order('date', { ascending: true });
+    var calRes = await sb.from('calendar_events').select('*').order('date', { ascending: true });
     if (calRes.data) {
       calendarEvents = calRes.data.map(function(e) {
         return { id: e.id, title: e.title, date: e.date, time: e.time || '', person: e.person || '', colorIdx: e.color_idx || 0, _id: e.id };
@@ -1272,7 +1265,7 @@ async function syncFromSupabase() {
       localStorage.setItem(CALENDAR_STORAGE, JSON.stringify(calendarEvents));
     }
     // Fetch all family_data rows
-    var dataRes = await supabase.from('family_data').select('*');
+    var dataRes = await sb.from('family_data').select('*');
     if (dataRes.data) {
       dataRes.data.forEach(function(row) {
         try {
@@ -1296,16 +1289,16 @@ async function syncFromSupabase() {
 
 function subscribeToRealtime() {
   if (!supabaseReady) return;
-  supabase.channel('notes-changes')
+  sb.channel('notes-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'family_notes' }, function() { syncFromSupabase(); })
     .subscribe();
-  supabase.channel('grocery-changes')
+  sb.channel('grocery-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'grocery_items' }, function() { syncFromSupabase(); })
     .subscribe();
-  supabase.channel('calendar-changes')
+  sb.channel('calendar-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, function() { syncFromSupabase(); })
     .subscribe();
-  supabase.channel('data-changes')
+  sb.channel('data-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'family_data' }, function() { syncFromSupabase(); })
     .subscribe();
 }
@@ -1314,7 +1307,7 @@ function subscribeToRealtime() {
 async function cloudSaveData(key, data) {
   if (!supabaseReady || _syncing) return;
   try {
-    await supabase.from('family_data').upsert({ key: key, data: data, updated_at: new Date().toISOString() });
+    await sb.from('family_data').upsert({ key: key, data: data, updated_at: new Date().toISOString() });
   } catch(e) { console.warn('Cloud save failed for', key, e); }
 }
 
@@ -1322,14 +1315,14 @@ async function cloudSaveData(key, data) {
 async function cloudAddNote(text, colorIdx, author) {
   if (!supabaseReady) return;
   try {
-    await supabase.from('family_notes').insert({ text: text, author: author, color_idx: colorIdx });
+    await sb.from('family_notes').insert({ text: text, author: author, color_idx: colorIdx });
   } catch(e) { console.warn('Cloud add note failed:', e); }
 }
 
 async function cloudRemoveNote(noteId) {
   if (!supabaseReady || !noteId) return;
   try {
-    await supabase.from('family_notes').delete().eq('id', noteId);
+    await sb.from('family_notes').delete().eq('id', noteId);
   } catch(e) { console.warn('Cloud remove note failed:', e); }
 }
 
@@ -1337,35 +1330,35 @@ async function cloudRemoveNote(noteId) {
 async function cloudAddGrocery(name, category, punjabi) {
   if (!supabaseReady) return;
   try {
-    await supabase.from('grocery_items').insert({ name: name, category: category, punjabi: punjabi || '' });
+    await sb.from('grocery_items').insert({ name: name, category: category, punjabi: punjabi || '' });
   } catch(e) { console.warn('Cloud add grocery failed:', e); }
 }
 
 async function cloudToggleGrocery(groceryId, checked) {
   if (!supabaseReady || !groceryId) return;
   try {
-    await supabase.from('grocery_items').update({ checked: checked }).eq('id', groceryId);
+    await sb.from('grocery_items').update({ checked: checked }).eq('id', groceryId);
   } catch(e) { console.warn('Cloud toggle grocery failed:', e); }
 }
 
 async function cloudRemoveGrocery(groceryId) {
   if (!supabaseReady || !groceryId) return;
   try {
-    await supabase.from('grocery_items').delete().eq('id', groceryId);
+    await sb.from('grocery_items').delete().eq('id', groceryId);
   } catch(e) { console.warn('Cloud remove grocery failed:', e); }
 }
 
 async function cloudClearCheckedGroceries() {
   if (!supabaseReady) return;
   try {
-    await supabase.from('grocery_items').delete().eq('checked', true);
+    await sb.from('grocery_items').delete().eq('checked', true);
   } catch(e) { console.warn('Cloud clear checked failed:', e); }
 }
 
 async function cloudClearAllGroceries() {
   if (!supabaseReady) return;
   try {
-    await supabase.from('grocery_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await sb.from('grocery_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   } catch(e) { console.warn('Cloud clear all failed:', e); }
 }
 
@@ -1373,14 +1366,14 @@ async function cloudClearAllGroceries() {
 async function cloudAddCalEvent(title, date, time, person, colorIdx) {
   if (!supabaseReady) return;
   try {
-    await supabase.from('calendar_events').insert({ title: title, date: date, time: time || '', person: person || '', color_idx: colorIdx || 0 });
+    await sb.from('calendar_events').insert({ title: title, date: date, time: time || '', person: person || '', color_idx: colorIdx || 0 });
   } catch(e) { console.warn('Cloud add cal event failed:', e); }
 }
 
 async function cloudRemoveCalEvent(eventId) {
   if (!supabaseReady || !eventId) return;
   try {
-    await supabase.from('calendar_events').delete().eq('id', eventId);
+    await sb.from('calendar_events').delete().eq('id', eventId);
   } catch(e) { console.warn('Cloud remove cal event failed:', e); }
 }
 
